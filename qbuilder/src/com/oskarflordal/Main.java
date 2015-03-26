@@ -10,19 +10,21 @@ import opennlp.tools.sentdetect.SentenceModel;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        SentenceDetect();
+        Database db = new Database();
+
+        db.getRandom();
+
+        SentenceDetect("Juha är en liten björn. Varför då? Jo men det är han.");
     }
 
-    public static void SentenceDetect() throws InvalidFormatException,
+    public static void SentenceDetect(String paragrah) throws InvalidFormatException,
             IOException {
-        String paragraph = "Hi. How are you? This is Mike.";
-
         // always start with a model, a model is learned from training data
-        FileInputStream is = new FileInputStream("en-sent.bin");
+        FileInputStream is = new FileInputStream("/home/oskar/projekt/wikidigg/bin/se-sent.bin");
         SentenceModel model = new SentenceModel(is);
         SentenceDetectorME sdetector = new SentenceDetectorME(model);
 
-        String sentences[] = sdetector.sentDetect(paragraph);
+        String sentences[] = sdetector.sentDetect(paragrah);
 
         System.out.println(sentences[0]);
         System.out.println(sentences[1]);
