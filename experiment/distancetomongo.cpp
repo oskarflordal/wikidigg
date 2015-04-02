@@ -34,44 +34,47 @@ using bsoncxx::builder::stream::close_array;
 const long long max_size = 2000;         // max length of strings
 const long long N = 20;                  // number of closest words that will be shown
 const long long max_w = 50;              // max length of vocabulary entries
+const int PARA = 1024;
 
 float *M;
 char *vocab;
 
 FILE *f;
 char st1[max_size];
-long long bestw[N];
 char file_name[max_size], st[100][max_size];
-float dist, len, bestd[N], vec[max_size];
+long long bestw[PARA][N];
+float bestd[PARA][N], vec[PARA][max_size];
 long long words, size, a, b, c, d, cn, bi[100];
 char ch;
 
 
 void findSimilar() {
 
-  for (a = 0; a < N; a++) {
-    bestw[a] = 0;
-    bestd[a] = -1;
+  for (int p = 0; p < PARA; ++p) {
+    for (a = 0; a < N; a++) {
+      bestw[p][a] = 0;
+      bestd[p][a] = -1;
+    }
   }
   
   for (c = 0; c < words; c++) {
-    a = 0;
+#pragma omp parallel for
+    for (unsigned int p = 0; p < PARA; ++p) {
+      float dist = 0;
+      for (long long a = 0; a < size; a++) {
+	dist += vec[p][a] * M[a + c * size];
+      }
 
-    dist = 0;
-
-    for (a = 0; a < size; a++) {
-      dist += vec[a] * M[a + c * size];
-    }
-
-    for (a = 0; a < N; a++) {
-      if (dist > bestd[a]) {
-	for (d = N - 1; d > a; d--) {
-	  bestd[d] = bestd[d - 1];
-	  bestw[d] = bestw[d - 1];
+      for (unsigned int a = 0; a < N; a++) {
+	if (dist > bestd[p][a]) {
+	  for (d = N - 1; d > a; d--) {
+	    bestd[p][d] = bestd[p][d - 1];
+	    bestw[p][d] = bestw[p][d - 1];
+	  }
+	  bestd[p][a] = dist;
+	  bestw[p][a] = c;
+	  break;
 	}
-	bestd[a] = dist;
-	bestw[a] = c;
-	break;
       }
     }
   }
@@ -112,7 +115,7 @@ int main(int argc, char** argv) {
       }
       vocab[b * max_w + a] = 0;
       for (a = 0; a < size; a++) fread(&M[a + b * size], sizeof(float), 1, f);
-      len = 0;
+      float len = 0;
       for (a = 0; a < size; a++) len += M[a + b * size] * M[a + b * size];
       len = sqrt(len);
       for (a = 0; a < size; a++) M[a + b * size] /= len;
@@ -120,41 +123,51 @@ int main(int argc, char** argv) {
     fclose(f);
 
     // go through each word
-    for (int i = 0 ; i < words; ++i) {
-      // find the most similar
-      b = i;
+    for (unsigned int i = 0 ; i < words; i+=PARA) {
+      printf("%d\n", i);
+      for (unsigned int p = 0; (p < PARA) && (i*PARA+p < words); ++p) {
+	// find the most similar
+	unsigned int b = i*PARA+p;
+	float len = 0;
 
-      for (a = 0; a < size; a++) vec[a] += M[a + b * size];
-      len = 0;
-      for (a = 0; a < size; a++) len += vec[a] * vec[a];
-      len = sqrt(len);
-      for (a = 0; a < size; a++) vec[a] /= len;
-
+	// prepare the vector
+	// this really assumes we do multiple words into one vector, which we don't
+	for (a = 0; a < size; a++) vec[p][a] = M[a + b * size];
+	for (a = 0; a < size; a++) len += vec[p][a] * vec[p][a];
+	len = sqrt(len);
+	for (a = 0; a < size; a++) {
+	  vec[p][a] /= len;
+	}
+      }
       findSimilar();
 
-      auto doc = document{} << "id" << i << "word" << std::string(&vocab[i*max_w]) << "simid" << open_array <<
-				 (int)bestw[1] << 
-				 (int)bestw[2] << 
-				 (int)bestw[3] << 
-				 (int)bestw[4] << 
-				 (int)bestw[5] << 
-				 (int)bestw[6] << 
-				 (int)bestw[7] << 
-				 (int)bestw[8] << 
-				 (int)bestw[9] << 
-				 (int)bestw[10] << 
-				 close_array <<
-				 finalize;
-      collection.insert_one(doc);
+      //insert all the vectors
+      for (int p = 0; (p < PARA) && (i*PARA+p < words); ++p) {
+	auto doc = document{} << "id" << (int32_t)(i*PARA+p) << "word" << std::string(&vocab[(i*PARA+p)*max_w]) << "simid" << open_array <<
+				   (int32_t)bestw[p][1] << 
+				   (int32_t)bestw[p][2] << 
+				   (int32_t)bestw[p][3] << 
+				   (int32_t)bestw[p][4] << 
+				   (int32_t)bestw[p][5] << 
+				   (int32_t)bestw[p][6] << 
+				   (int32_t)bestw[p][7] << 
+				   (int32_t)bestw[p][8] << 
+				   (int32_t)bestw[p][9] << 
+				   (int32_t)bestw[p][10] << 
+				   close_array <<
+				   finalize;
+	collection.insert_one(doc);
 
-      printf("%s : %d: %50s %d: %50s %d: %50s\n", &vocab[i*max_w], bestw[0], &vocab[bestw[0]*max_w], bestw[1], &vocab[bestw[1]*max_w], bestw[2], &vocab[bestw[2]*max_w]);
+	//	printf("%s : %llu: %50s %llu: %50s %llu: %50s\n", &vocab[(i*PARA+p)*max_w], bestw[p][0], &vocab[bestw[p][0]*max_w], bestw[p][1], &vocab[bestw[p][1]*max_w], bestw[p][2], &vocab[bestw[p][2]*max_w]);
+      }
     }
 
 
 
-    auto cursor = collection.find({});
+    /*    auto cursor = collection.find({});
 
     for (auto&& doc : cursor) {
         std::cout << bsoncxx::to_json(doc) << std::endl;
     }
+    */
 }
