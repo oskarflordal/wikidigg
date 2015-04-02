@@ -1,24 +1,37 @@
 Questions = new Mongo.Collection("questions");
+Wordvector = new Mongo.Collection("wordvec");
 
 if (Meteor.isClient) {
-  // This code only runs on the client
-  Template.body.helpers({
-    questions: function () {
-	return Questions.find({}, {sort: {createdAt: -1}})
-    }
-  });
+    Meteor.subscribe("wvec");
+
+    // This code only runs on the client
+    Template.body.helpers({
+	questions: function () {
+	    return Questions.find({}, {sort: {createdAt: -1}})
+	}
+    });
 
     Template.body.events({
-	"submit .new-q": function (event) {
+	"keydown": function (event, template) {
+	    var form = template.find(".newq");
+	    
+	    form.ans1.value = "dsfsfasdfas";
+	    Meteor.call("askSimilar", form.ans1.value, form);
+	    console.log("he!");
+	}
+    });
+
+    Template.body.events({
+	"submit .newq": function (event) {
 	    // This function is called when the new task form is submitted
 	    
 	    var question = event.target.question.value;
-	    var ans0 = event.target.question.value;
-	    var ans1 = event.target.question.value;
-	    var ans2 = event.target.question.value;
-	    var ans3 = event.target.question.value;
-	    var ans4 = event.target.question.value;
-	    var ans5 = event.target.question.value;
+	    var ans0 = event.target.ans0.value;
+	    var ans1 = event.target.ans1.value;
+	    var ans2 = event.target.ans2.value;
+	    var ans3 = event.target.ans3.value;
+	    var ans4 = event.target.ans4.value;
+	    var ans5 = event.target.ans5.value;
 	    var type = "standard"
 	    
 	    Meteor.call("addQuestion", question);
@@ -41,12 +54,17 @@ if (Meteor.isClient) {
 	    Meteor.call("deleteTask", this._id);
 	}
     }); 
-    // At the bottom of the client code
+
     Accounts.ui.config({
 	passwordSignupFields: "USERNAME_ONLY"
     });
 }
 
+if (Meteor.isServer) {
+  Meteor.publish("wvec", function () {
+    return Wordvector.find();
+  });
+}
 
 Meteor.methods({
   addQuestion: function (question) {
@@ -63,6 +81,15 @@ Meteor.methods({
       });
 
   },
+  askSimilar: function (text, form) {
+      console.log("ask sim");
+      form.ans2.value = "grumt2";
+      form.ans3.value = "grumt3";
+      form.ans4.value = "grumt4";
+      form.ans5.value = "grumt5";
+      form.ans6.value = "grumt6";
+  },
+
   deleteTask: function (taskId) {
     Questions.remove(taskId);
   },

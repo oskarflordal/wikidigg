@@ -13,16 +13,9 @@
       </label>
       {{> loginButtons}}
       {{#if currentUser}}
-      <form class="new-q">
-	<input type="text" name="question" placeholder="Type to add new question" />
-	<input type="text" name="ans0" placeholder="Correct answer" />
-	<input type="text" name="ans1" placeholder="Other answer" />
-	<input type="text" name="ans2" placeholder="Other answer" />
-	<input type="text" name="ans3" placeholder="Other answer" />
-	<input type="text" name="ans4" placeholder="Other answer" />
-	<input type="text" name="ans5" placeholder="Other answer" />
-	<input type="submit" value="Submit">
-      </form>
+
+
+      {{>qform}}
       {{/if}}
     </header>
 
@@ -32,11 +25,31 @@
       {{/each}}
     </ul>
   </div>
+
+
 </body>
 
+<template name="qform">
+      <form class="newq">
+	<input type="text" name="question" placeholder="Type to add new question" />
+	<input type="text" name="ans0" placeholder="Correct answer" />
+	<input type="text" name="ans1" placeholder="Other answer" />
+	<input type="text" name="ans2" placeholder="Other answer" />
+	<input type="text" name="ans3" placeholder="Other answer" />
+	<input type="text" name="ans4" placeholder="Other answer" />
+	<input type="text" name="ans5" placeholder="Other answer" />
+	<input type="submit" value="Submit">
+      </form>
+
+</template>
+
 <template name="question">
-  <li class="{{#if checked}}checked{{/if}}">
+  <li>
     <button class="delete">&times;</button>
     <span class="text"><strong>{{username}}</strong> - {{text}}</span>
   </li>
 </template>
+
+
+
+

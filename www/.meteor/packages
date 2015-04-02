@@ -9,3 +9,7 @@ autopublish
 accounts-ui
 accounts-password
 accounts-twitter
+meteorhacks:npm
+
+
+npm-container
