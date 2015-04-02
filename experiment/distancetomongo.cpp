@@ -124,10 +124,10 @@ int main(int argc, char** argv) {
 
     // go through each word
     for (unsigned int i = 0 ; i < words; i+=PARA) {
-      printf("%d\n", i);
-      for (unsigned int p = 0; (p < PARA) && (i*PARA+p < words); ++p) {
+      printf("%d/%llu\n", i, words);
+      for (unsigned int p = 0; (p < PARA) && (i+p < words); ++p) {
 	// find the most similar
-	unsigned int b = i*PARA+p;
+	unsigned int b = i+p;
 	float len = 0;
 
 	// prepare the vector
@@ -142,8 +142,8 @@ int main(int argc, char** argv) {
       findSimilar();
 
       //insert all the vectors
-      for (int p = 0; (p < PARA) && (i*PARA+p < words); ++p) {
-	auto doc = document{} << "id" << (int32_t)(i*PARA+p) << "word" << std::string(&vocab[(i*PARA+p)*max_w]) << "simid" << open_array <<
+      for (int p = 0; (p < PARA) && (i+p < words); ++p) {
+	auto doc = document{} << "id" << (int32_t)(i+p) << "word" << std::string(&vocab[(i+p)*max_w]) << "simid" << open_array <<
 				   (int32_t)bestw[p][1] << 
 				   (int32_t)bestw[p][2] << 
 				   (int32_t)bestw[p][3] << 
@@ -158,7 +158,7 @@ int main(int argc, char** argv) {
 				   finalize;
 	collection.insert_one(doc);
 
-	//	printf("%s : %llu: %50s %llu: %50s %llu: %50s\n", &vocab[(i*PARA+p)*max_w], bestw[p][0], &vocab[bestw[p][0]*max_w], bestw[p][1], &vocab[bestw[p][1]*max_w], bestw[p][2], &vocab[bestw[p][2]*max_w]);
+	//	printf("%s : %llu: %50s %llu: %50s %llu: %50s\n", &vocab[(i+p)*max_w], bestw[p][0], &vocab[bestw[p][0]*max_w], bestw[p][1], &vocab[bestw[p][1]*max_w], bestw[p][2], &vocab[bestw[p][2]*max_w]);
       }
     }
 
