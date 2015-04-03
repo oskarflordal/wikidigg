@@ -3,6 +3,7 @@ Wordvector = new Mongo.Collection("wordvec");
 
 if (Meteor.isClient) {
     Meteor.subscribe("wvec");
+    Meteor.subscribe("questions");
 
     // This code only runs on the client
     Template.body.helpers({
@@ -61,9 +62,13 @@ if (Meteor.isClient) {
 }
 
 if (Meteor.isServer) {
-  Meteor.publish("wvec", function () {
-    return Wordvector.find();
-  });
+    Meteor.publish("wvec", function () {
+	return Wordvector.find();
+    });
+    
+    Meteor.publish("questions", function () {
+	return Questions.find();
+    });
 }
 
 Meteor.methods({
