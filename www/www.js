@@ -3,7 +3,10 @@ Wordvector = new Mongo.Collection("wordvec");
 
 if (Meteor.isClient) {
     Meteor.subscribe("wvec");
-    Meteor.subscribe("questions");
+    Session.set("filterWord", "hello");
+    Tracker.autorun(function () {
+	Meteor.subscribe("questions", Session.get("filterWord"));
+    });
 
     // This code only runs on the client
     Template.body.helpers({
@@ -13,10 +16,12 @@ if (Meteor.isClient) {
     });
 
     Template.body.events({
-	"keydown": function (event, template) {
+	"keyup": function (event, template) {
 	    var form = template.find(".newq");
+
+	    Session.set("filterWord", form.question.value);
 	    
-	    form.ans1.value = "dsfsfasdfas";
+	    form.ans1.value = form.ans0.value;
 	    Meteor.call("askSimilar", form.ans1.value, form);
 	    console.log("he!");
 	}
@@ -66,8 +71,8 @@ if (Meteor.isServer) {
 	return Wordvector.find();
     });
     
-    Meteor.publish("questions", function () {
-	return Questions.find();
+    Meteor.publish("questions", function (filterWord) {
+	return Questions.find({"text": filterWord});
     });
 }
 
@@ -86,6 +91,7 @@ Meteor.methods({
       });
 
   },
+
   askSimilar: function (text, form) {
       console.log("ask sim");
       form.ans2.value = "grumt2";
