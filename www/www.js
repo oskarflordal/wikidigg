@@ -2,10 +2,13 @@ Questions = new Mongo.Collection("questions");
 Wordvector = new Mongo.Collection("wordvec");
 
 if (Meteor.isClient) {
-    Meteor.subscribe("wvec");
-    Session.set("filterWord", "hello");
+    Session.set("qSearch", "");
+    Session.set("ansSearch", "");
     Tracker.autorun(function () {
-	Meteor.subscribe("questions", Session.get("filterWord"));
+	Meteor.subscribe("questions", Session.get("qSearch"));
+    });
+    Tracker.autorun(function () {
+	Meteor.subscribe("wordvec", Session.get("ansSearch"));
     });
 
     // This code only runs on the client
@@ -19,11 +22,18 @@ if (Meteor.isClient) {
 	"keyup": function (event, template) {
 	    var form = template.find(".newq");
 
-	    Session.set("filterWord", form.question.value);
-	    
-	    form.ans1.value = form.ans0.value;
-	    Meteor.call("askSimilar", form.ans1.value, form);
-	    console.log("he!");
+	    // If we update question we will suggest other similar questions
+	    // in the quesition list
+	    // This should probably also include the answer
+	    console.log()
+	    if (Session.get("qSearch") != form.question.value) {
+		Session.set("qSearch", form.question.value);
+	    }
+
+	    // If we updated ans0 we will suggest answers
+	    if (Session.get("ansSearch") != form.ans0.value) {
+		Session.set("ansSearch", form.ans0.value);
+	    }
 	}
     });
 
@@ -67,7 +77,7 @@ if (Meteor.isClient) {
 }
 
 if (Meteor.isServer) {
-    Meteor.publish("wvec", function () {
+    Meteor.publish("wordvec", function () {
 	return Wordvector.find();
     });
     
@@ -90,15 +100,6 @@ Meteor.methods({
 	  createdAt: new Date() // current time
       });
 
-  },
-
-  askSimilar: function (text, form) {
-      console.log("ask sim");
-      form.ans2.value = "grumt2";
-      form.ans3.value = "grumt3";
-      form.ans4.value = "grumt4";
-      form.ans5.value = "grumt5";
-      form.ans6.value = "grumt6";
   },
 
   deleteTask: function (taskId) {
