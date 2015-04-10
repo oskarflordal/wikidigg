@@ -7,8 +7,11 @@ if (Meteor.isClient) {
     Tracker.autorun(function () {
 	Meteor.subscribe("questions", Session.get("qSearch"));
     });
+
+    var handleAnsRunning
     Tracker.autorun(function () {
-	Meteor.subscribe("wordvec", Session.get("ansSearch"));
+	var foo = Session.get("ansSearch")
+	Meteor.subscribe("wordvec", foo);
     });
 
     // This code only runs on the client
@@ -18,6 +21,16 @@ if (Meteor.isClient) {
 	}
     });
 
+    Template.body.helpers({
+	wordvec: function () {
+	    var ret = Wordvector.find()
+	    console.log(ret);
+	    return ret;
+	}
+    });
+
+    var lastAnsSearch = -1;
+
     Template.body.events({
 	"keyup": function (event, template) {
 	    var form = template.find(".newq");
@@ -25,14 +38,20 @@ if (Meteor.isClient) {
 	    // If we update question we will suggest other similar questions
 	    // in the quesition list
 	    // This should probably also include the answer
-	    console.log()
 	    if (Session.get("qSearch") != form.question.value) {
 		Session.set("qSearch", form.question.value);
 	    }
 
 	    // If we updated ans0 we will suggest answers
 	    if (Session.get("ansSearch") != form.ans0.value) {
-		Session.set("ansSearch", form.ans0.value);
+		// make sure we have  a delay so we don't hammer the server
+		// and queue up a bunch of publications
+		if (lastAnsSearch != -1) {
+		    Meteor.clearTimeout(lastAnsSearch);
+		}
+		lastAnsSearch = Meteor.setTimeout(function() {
+		    Session.set("ansSearch", form.ans0.value.toLowerCase());
+		}, 300);
 	    }
 	}
     });
@@ -77,12 +96,23 @@ if (Meteor.isClient) {
 }
 
 if (Meteor.isServer) {
-    Meteor.publish("wordvec", function () {
-	return Wordvector.find();
+    Meteor.publish("wordvec", function (filterWord) {
+	// check if we have the word available
+	var ret = Wordvector.find({"word": filterWord});
+	var data = ret.fetch();
+	var ans = null;
+	if (ret.count() != 0) {
+	    console.log(data[0].simid);
+	    // fetch all words that a similar
+	    ans = Wordvector.find({"id": {$in : data[0].simid}});
+	    console.log(ans.count());
+	}
+	return ans;
     });
     
     Meteor.publish("questions", function (filterWord) {
-	return Questions.find({"text": filterWord});
+	var ret = Questions.find({"text": filterWord})
+	return ret;
     });
 }
 
