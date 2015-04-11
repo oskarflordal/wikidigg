@@ -7,11 +7,17 @@
   <div class="container">
     <header>
       <h1>Question List</h1>
+      <label class="show-all">
+	<input type="checkbox" checked="{{showAll}}" />
+	Show all questions
+      </label>
+
       {{> loginButtons}}
       {{#if currentUser}}
 
 
       {{>qform}}
+      {{>possiblealts}}
       {{/if}}
     </header>
 
@@ -39,21 +45,26 @@
 	<input type="text" name="ans4" placeholder="Other answer" />
 	<input type="text" name="ans5" placeholder="Other answer" />
 	<input type="submit" value="Submit">
+	<button type="clear" value="Clear">Clear</button>
       </form>
+</template>
 
+<template name="possiblealts">
+  These are possible alternative answers:
+  {{#each wordvec}}
+  {{> answer}}
+  {{/each}}
 </template>
 
 <template name="question">
   <li>
     <button class="delete">&times;</button>
-    <span class="text"><strong>{{username}}</strong> - {{text}}</span>
+    <span class="text">{{text}} - <strong>{{ans}}</strong> :  {{#each other}}{{this}} {{/each}} </span>
   </li>
 </template>
 
 <template name="answer">
-  <li>
-    <span class="word">{{word}}</span>
-  </li>
+  <button class="addAns" value="{{word}}">{{word}}</button>
 </template>
 
 

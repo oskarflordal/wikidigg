@@ -1,8 +1,8 @@
 /* CSS declarations go here */
 body {
   font-family: sans-serif;
-  background-color: #315481;
-  background-image: linear-gradient(to bottom, #333333, #cccccc 100%);
+  background-color: #ed4faf;
+  background-image: linear-gradient(to bottom, #ed4faf, #f990cc 100%);
   background-attachment: fixed;
 
   position: absolute;
@@ -18,7 +18,7 @@ body {
 }
 
 .container {
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
   min-height: 100%;
   background: white;
