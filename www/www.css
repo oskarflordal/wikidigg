@@ -81,12 +81,21 @@ ul {
 li {
   position: relative;
   list-style: none;
-  padding: 15px;
+  padding: 10px;
   border-bottom: #eee solid 1px;
 }
 
-li .text {
+li .question {
   margin-left: 10px;
+}
+li .answer {
+  font-size: 12px;
+  margin-left: 10px;
+}
+li .meta {
+  font-size: 12px;
+  margin-left: 10px;
+  float : right;
 }
 
 li.checked {

@@ -50,7 +50,9 @@
 <template name="question">
   <li>
     <button class="delete">&times;</button>
-    <span class="text">{{text}} - <strong>{{ans}}</strong> :  {{#each other}}{{this}} {{/each}} </span>
+  <span class="question">{{text}} </span><br>
+  <span class="answer"><strong>{{ans}}</strong> :  {{#each other}}{{this}} {{/each}}</span><br>
+  <span class="meta"><strong>Author: </strong> :  {{username}} ({{relcreated}})</span>
   </li>
 </template>
 

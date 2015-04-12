@@ -155,6 +155,12 @@ if (Meteor.isClient) {
 	}
     }); 
 
+    Template.question.helpers({
+	relcreated : function() {
+	    return moment(this.createdAt).fromNow();
+	}
+    });
+    
     Accounts.ui.config({
 	passwordSignupFields: "USERNAME_ONLY"
     });
@@ -201,7 +207,7 @@ Meteor.methods({
 	  ans : ans,
 	  other: other,
 	  category: category,
-	  username: Meteor.user().username,
+	  username: Meteor.user().profile.name,
 	  createdAt: new Date() // current time
       });
 
