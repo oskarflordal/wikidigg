@@ -15,9 +15,7 @@
       {{> loginButtons}}
       {{#if currentUser}}
 
-
       {{>qform}}
-      {{>possiblealts}}
       {{/if}}
     </header>
 
@@ -47,13 +45,6 @@
 	<input type="submit" value="Submit">
 	<button type="clear" value="Clear">Clear</button>
       </form>
-</template>
-
-<template name="possiblealts">
-  These are possible alternative answers:
-  {{#each wordvec}}
-  {{> answer}}
-  {{/each}}
 </template>
 
 <template name="question">
