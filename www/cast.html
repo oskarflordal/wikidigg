@@ -1,0 +1,39 @@
+<template name="client">
+<html>
+<head>
+  <title>Example minimum receiver</title>
+  <script type="text/javascript" src="//www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script>
+</head>
+
+<body>
+  <div class="fullscreen">
+  <!--  <video id='media'/> -->
+    <div id="magisk" class="center">A nicerer text</div>
+  <script>
+    document.getElementById("magisk").innerHTML = "init";
+    if (typeof cast == 'undefined') {
+    document.getElementById("magisk").innerHTML = "undefined";
+    }
+    
+    window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
+    window.castReceiverManager.start();
+    document.getElementById("magisk").innerHTML = "blip";
+    document.getElementById("magisk").innerHTML = window.castReceiverManager;
+
+    var customMessageBus = window.castReceiverManager.getCastMessageBus('urn:x-cast:xyz.qupplo.qupplo');
+
+    document.getElementById("magisk").innerHTML = "blop";
+    customMessageBus.onMessage = function(event) {
+
+    document.getElementById("magisk").innerHTML ="rec";//event.senderId + ": " + event.data;
+    }
+
+  </script>
+
+  </div>
+</body>
+</html>
+</template>
+
+
+
