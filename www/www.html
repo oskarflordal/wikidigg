@@ -1,4 +1,6 @@
 <!-- www.html -->
+
+<template name="home">
 <head>
   <title>Qbuilder frontend</title>
 </head>
@@ -33,6 +35,27 @@
 
 </body>
 
+  </template>
+  <template name="client">
+<html>
+<head>
+  <title>Example minimum receiver</title>
+  <script src="//www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script>
+</head>
+<body>
+  <div class="fullscreen">
+  <!--  <video id='media'/> -->
+  <script>
+    window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
+    window.castReceiverManager.start();
+  </script>
+
+    <div class="center">A nice text</div>
+  </div>
+</body>
+</html>
+  </template>
+  
 <template name="qform">
       <form class="newq">
 	<input type="text" name="question" placeholder="Type to add new question" />

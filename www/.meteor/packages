@@ -8,3 +8,4 @@ meteor-platform
 accounts-ui
 accounts-twitter
 momentjs:moment
+iron:router
