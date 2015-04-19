@@ -88,7 +88,8 @@ public class MainActivity extends ActionBarActivity {
 		voiceButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				startVoiceRecognitionActivity();
+				sendMessage("World domination " + num);
+				num++;
 			}
 		});
 
@@ -99,12 +100,6 @@ public class MainActivity extends ActionBarActivity {
 						CastMediaControlIntent.categoryForCast(getResources()
 								.getString(R.string.app_id))).build();
 		mMediaRouterCallback = new MyMediaRouterCallback();
-	}
-
-	//dummy
-	private void startVoiceRecognitionActivity() {
-		sendMessage("World domination " + num);
-		num++;
 	}
 
 	@Override

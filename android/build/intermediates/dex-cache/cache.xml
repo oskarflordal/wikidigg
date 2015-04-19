@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="/Users/oskar1/Documents/android-sdk-macosx/extras/android/m2repository/com/android/support/support-v4/19.0.1/support-v4-19.0.1.jar"
+        jumboMode="false"
+        revision="20.0.0"
+        sha1="587da9a481ffd341d2fa091704489b89845ddacd">
+        <dex dex="/Users/oskar1/proj/wikidigg/android/build/intermediates/pre-dexed/debug/support-v4-19.0.1-ee88c3526eccbd36c4951963c8d168ea92ade79a.jar" />
+    </item>
+    <item
+        jar="/Users/oskar1/proj/wikidigg/android/build/intermediates/exploded-aar/com.android.support/mediarouter-v7/19.0.1/libs/internal_impl-19.0.1.jar"
+        jumboMode="false"
+        revision="20.0.0"
+        sha1="e1323875349a4e9b64fe8692f137f92b22dddcef">
+        <dex dex="/Users/oskar1/proj/wikidigg/android/build/intermediates/pre-dexed/debug/internal_impl-19.0.1-07162d15401288da6322525694d66a05cdddf062.jar" />
+    </item>
+    <item
+        jar="/Users/oskar1/proj/wikidigg/android/build/intermediates/exploded-aar/com.android.support/mediarouter-v7/19.0.1/classes.jar"
+        jumboMode="false"
+        revision="20.0.0"
+        sha1="7f6ef78b879e271f8645b2f2c2702390305f0fa2">
+        <dex dex="/Users/oskar1/proj/wikidigg/android/build/intermediates/pre-dexed/debug/classes-b3a888afc4012f9f4affb5d1c21b2fe8c2b1f8c8.jar" />
+    </item>
+    <item
+        jar="/Users/oskar1/proj/wikidigg/android/build/intermediates/exploded-aar/com.android.support/appcompat-v7/19.0.1/classes.jar"
+        jumboMode="false"
+        revision="20.0.0"
+        sha1="f71a6822470c9eb659d4f4a6cb57b780b35f058b">
+        <dex dex="/Users/oskar1/proj/wikidigg/android/build/intermediates/pre-dexed/debug/classes-bb25c0424e028e0af4cdd7277c1a94c6f2544917.jar" />
+    </item>
+    <item
+        jar="/Users/oskar1/proj/wikidigg/android/build/intermediates/exploded-aar/com.google.android.gms/play-services/4.2.42/classes.jar"
+        jumboMode="false"
+        revision="20.0.0"
+        sha1="e5f81129dfb3d02df80126512bc98278ed2bb40a">
+        <dex dex="/Users/oskar1/proj/wikidigg/android/build/intermediates/pre-dexed/debug/classes-6c1b35a9786337ce6a4333a169b71302d1e047ef.jar" />
+    </item>
+
+</items>
