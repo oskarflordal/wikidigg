@@ -1,5 +1,3 @@
-var PageTransitions = (function() {
-
     var $main = $( '#pt-main' ),
     $pages = $main.children( 'div.pt-page' ),
     animcursor = 1,
@@ -22,6 +20,19 @@ var PageTransitions = (function() {
         max: 67
     };
 
+    var animcursorCheck = function() {
+	if( isAnimating ) {
+            return false;
+	}
+	if( animcursor > animations.max ) {
+            animcursor = 1;
+	}
+	else if (animcursor < 1) {
+            animcursor = animations.max
+	}
+	return animcursor;
+    };
+    
     function init() {
 	
 	$pages.each( function() {
@@ -30,29 +41,13 @@ var PageTransitions = (function() {
 	} );
 	
 	$pages.eq( current ).addClass( 'pt-page-current' );
-	
-        var animcursorCheck = function() {
-	    if( isAnimating ) {
-                return false;
-	    }
-	    if( animcursor > animations.max ) {
-                animcursor = 1;
-	    }
-	    else if (animcursor < 1) {
-                animcursor = animations.max
-	    }
-	    return animcursor;
-        };
-	
-	function doNext() {
-	    nextPage( animcursorCheck() );
-	    ++animcursor;
-	    setTimeout(doNext, 2000);
-	    }
-	
-	doNext();
     }
 
+    function flipPage() {
+	nextPage( animcursorCheck() );
+	++animcursor;
+    }
+	
 
     function nextPage(options ) {
 	var animation = (options.animation) ? options.animation : options;
@@ -393,10 +388,3 @@ var PageTransitions = (function() {
     }
 
     init();
-
-    return {
-	init : init,
-	nextPage : nextPage
-    };
-
-})();
