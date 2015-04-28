@@ -43,7 +43,6 @@ function generateQuestions(options) {
     response.q = options.types.map(generateQuestion);
     console.log(response);
     return response;
-
 }
 
 var WebSocketServer = require('ws').Server

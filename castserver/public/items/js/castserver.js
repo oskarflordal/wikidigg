@@ -15,11 +15,11 @@ jQuery.ajax("http://www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.j
     document.getElementById("q1").innerHTML = "<h1><span>A collection of</span><strong>Page</strong> BLOP bip bopp apa apapapap pdpfdsfas fpasdpfas fsdpfpsad</h1>";
     customMessageBus.onMessage = function(event) {
 
-	document.getElementById("q1").innerHTML ="rec" + event.senderId + ": " + event.data;
+	document.getElementById("waitforplayers").innerHTML ="rec" + event.senderId + ": " + event.data;
     }
 
     
-//    window.castReceiverManager.start();
+    window.castReceiverManager.start();
 
 }})
 
@@ -89,9 +89,10 @@ function fetchNewQuestions() {
     function onMessage(evt) {
 	var json = JSON.parse(evt.data);
 	console.log(json);
-	switch (json.type) {
+/*	switch (json.type) {
 	case "questions" : startGame(json.q); break;
 	}
+*/
     }
 
     websocket.onopen = function(evt) { console.log(request); websocket.send(JSON.stringify(request)); }; // no real point of wrapping
