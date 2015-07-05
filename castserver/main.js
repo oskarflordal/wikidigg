@@ -1,6 +1,8 @@
 var express = require('express');
 var app = express();
 
+require('simple-blog').start();
+
 app.get('/', function (req, res) {
   res.send('Hello World!');
 });
@@ -45,13 +47,40 @@ function generateQuestions(options) {
     return response;
 }
 
+
+var liveServers = {};
+
+function makeid() {
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    do {
+	for( var i=0; i < 5; i++ ) {
+            text += possible.charAt(Math.floor(Math.random() * possible.length));
+	}
+    } while (liveServers[text] != undefined);
+
+    return text;
+}
+
+
+// This server is used for connection from the Chromcast
 var WebSocketServer = require('ws').Server
 , wss = new WebSocketServer({port: 8080});
 wss.on('connection', function(ws) {
+    // give this server a special ID and save it for later
+    
+    var id = makeid();
+
+    liveServers[id] = {socket : ws, created : new Date()};
+
+    // make sure the client is aware of its id
+    ws.send(JSON.stringify({type : "setid", id : id}));
+
     ws.on('message', function(message) {
 	try {
 	    var json = JSON.parse(message);
-	    // Do some sort of sanity checking
+	    // TODO: Do some sort of sanity checking
 	    switch (json.type) {
 	    case "req" : ws.send(JSON.stringify(generateQuestions(json.options))); break;
 	    }
@@ -62,3 +91,24 @@ wss.on('connection', function(ws) {
     });
 });
 
+// This socket server is used for connection from a js-client
+var WebSocketServer = require('ws').Server
+, wss = new WebSocketServer({port: 8081});
+wss.on('connection', function(ws) {
+    ws.on('message', function(message) {
+	try {
+	    var json = JSON.parse(message);
+	    
+	    // pass it on to the relevant chromecast device
+	    // TODO: do some sanity checking here
+	    // TODO: this is a good place to grab statistics
+	    liveServers[json.id].send(message);
+	} catch (ex) {
+	    // close the connection
+	    ws.close();
+	}
+    });
+});
+
+
+// Keep track of connections to the js-client

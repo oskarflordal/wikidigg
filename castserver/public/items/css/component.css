@@ -56,6 +56,17 @@ html, body { height: 100%; }
 	text-align: center;
 }
 
+.qrcode {
+        display: block;
+	position: absolute;
+	top: 57%;
+	left: 50%;
+	margin-right: -50%;
+	width: 100%;
+	align: center;
+	text-align: center;
+}
+
 .pt-page h1 span {
 	font-family: 'Satisfy', serif;
 	font-weight: 400;

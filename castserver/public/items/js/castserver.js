@@ -3,6 +3,8 @@ document.getElementById("q1").innerHTML = "<h1><span>A collection of</span><stro
 var ans1Func;
 
 jQuery.ajax("http://www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js", {complete: function() {
+    return;
+
     if (typeof cast == 'undefined') {
 	document.getElementById("magisk").innerHTML = "undefined";
     }
@@ -10,14 +12,23 @@ jQuery.ajax("http://www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.j
     window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
     document.getElementById("q1").innerHTML = "<h1><span>A collection of</span><strong>Page</strong> Blip</h1>";
 
+
+//    document.getElementById("waitforplayers").innerHTML ="<h1>step 1</h1>";
+
     var customMessageBus = window.castReceiverManager.getCastMessageBus('urn:x-cast:xyz.qupplo.qupplo');
+
+//    document.getElementById("waitforplayers").innerHTML ="<h1>step 2</h1>";
 
     document.getElementById("q1").innerHTML = "<h1><span>A collection of</span><strong>Page</strong> BLOP bip bopp apa apapapap pdpfdsfas fpasdpfas fsdpfpsad</h1>";
     customMessageBus.onMessage = function(event) {
 
-	document.getElementById("waitforplayers").innerHTML ="rec" + event.senderId + ": " + event.data;
+	document.getElementById("waitforplayers").innerHTML ="<h1>rec" + event.senderId + ": " + event.data + "</h1>";
     }
 
+    customMessageBus.onSenderConnected = function(event) {
+
+	document.getElementById("waitforplayers").innerHTML ="<h1>someone joined</h1>";
+    }
     
     window.castReceiverManager.start();
 
@@ -75,6 +86,17 @@ function startGame(questions) {
     setTimeout( function() {showInstructions(questions)}, 1000);
 }
 
+function setId(id) {
+    var url = "http://qupplo.xyz/items/client.html?" + id;
+
+    document.getElementById("url").innerHTML = url;
+    new QRCode(document.getElementById("qrcode"), url);
+}
+
+function addClient() {
+    document.getElementById("waitforplayers").innerHTML ="<h1>someone joined</h1>";
+}
+
 function fetchNewQuestions() {
     // Setup connection to server through websockets
     var url = window.location.href.split('//')[1].split('/')[0].split(':')[0];
@@ -84,19 +106,25 @@ function fetchNewQuestions() {
     var request = {};
     request.type = "req";
     request.options = {};
-    request.options.types = ["map","classic","classic","classic","classic"];
+    request.options.types = ["classic","classic","classic","classic","classic"];
 
     function onMessage(evt) {
 	var json = JSON.parse(evt.data);
 	console.log(json);
-/*	switch (json.type) {
+	switch (json.type) {
 	case "questions" : startGame(json.q); break;
+	case "setid"     : setId(json.id); break;
+
+	// from a client
+	case "connect"   : addClient(json);
+	     websocket.send(JSON.stringify(request)); break;
+	case "answer"    : clientAnswer(json); break;
 	}
-*/
+
     }
 
-    websocket.onopen = function(evt) { console.log(request); websocket.send(JSON.stringify(request)); }; // no real point of wrapping
-    websocket.onclose = function(evt) { console.log("websocke closed")};
+    websocket.onopen = function(evt) { console.log(request); }; // no real point of wrapping
+    websocket.onclose = function(evt) { console.log("websocket closed")};
     websocket.onmessage = function(evt) { onMessage(evt) };
     websocket.onerror = function(evt) { console.log("error")};
 
