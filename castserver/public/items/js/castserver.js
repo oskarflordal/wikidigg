@@ -87,7 +87,8 @@ function startGame(questions) {
 }
 
 function setId(id) {
-    var url = "http://qupplo.xyz/items/client.html?" + id;
+    var url = window.location.href.split('//')[1].split('/')[0]+'/items/client.html?' + id;
+//    var url = "http://qupplo.xyz/items/client.html?" + id;
 
     document.getElementById("url").innerHTML = url;
     new QRCode(document.getElementById("qrcode"), url);

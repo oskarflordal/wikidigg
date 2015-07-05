@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
 
-require('simple-blog').start();
+//require('simple-blog').start();
 
 app.get('/', function (req, res) {
   res.send('Hello World!');
@@ -60,7 +60,8 @@ function makeid() {
 	}
     } while (liveServers[text] != undefined);
 
-    return text;
+    //    return text;
+    return "12345";
 }
 
 
@@ -73,7 +74,8 @@ wss.on('connection', function(ws) {
     var id = makeid();
 
     liveServers[id] = {socket : ws, created : new Date()};
-
+    console.log(liveServers);
+    
     // make sure the client is aware of its id
     ws.send(JSON.stringify({type : "setid", id : id}));
 
@@ -102,7 +104,10 @@ wss.on('connection', function(ws) {
 	    // pass it on to the relevant chromecast device
 	    // TODO: do some sanity checking here
 	    // TODO: this is a good place to grab statistics
-	    liveServers[json.id].send(message);
+	    console.log(liveServers);
+	    console.log("Passing " + message + " " + (typeof liveServers[json.serverid] !== 'undefined'));
+	    liveServers[json.serverid].socket.send(message);
+	    console.log("passed");
 	} catch (ex) {
 	    // close the connection
 	    ws.close();
