@@ -3,10 +3,15 @@ document.getElementById("q1").innerHTML = "<h1><span>A collection of</span><stro
 document.getElementById("waitforplayers").innerHTML ="<h1>Joining game</h1>";
 
 var websocket;
-var id;
+var serverid;
+var name;
 
-function start() {
-    websocket.send(JSON.stringify({serverid : id, type : "connect"}))
+function start(name) {
+    websocket.send(JSON.stringify({type : "connect", serverid, name, playerid : null}))
+}
+
+function assignId(json) {
+    document.getElementById("waitforplayers").innerHTML ="<h1><input type=SUBMIT value="Submit" name="mySubmit"></h1>";
 }
 
 function fetchNewQuestions() {
@@ -15,19 +20,19 @@ function fetchNewQuestions() {
     websocket = new WebSocket("ws://"+url + ":8081");
 
     // Connect to the correct id
-    id = window.location.search.replace("?", "");
-
+    serverid = window.location.search.replace("?", "");
 
     function onMessage(evt) {
 	var json = JSON.parse(evt.data);
 	console.log(json);
 	switch (json.type) {
-	case "questions" : startGame(json.q); break;
+	case "assignid" : assignId(json); break;
 	}
-
     }
 
-    websocket.onopen = function(evt) { console.log("onopen"); start(); }; // no real point of wrapping
+    var name = "Pelle"; // TODO: get from UI
+    
+    websocket.onopen = function(evt) { console.log("onopen"); start(name); }; // no real point of wrapping
     websocket.onclose = function(evt) { console.log("websocket closed")};
     websocket.onmessage = function(evt) { onMessage(evt) };
     websocket.onerror = function(evt) { console.log("error")};

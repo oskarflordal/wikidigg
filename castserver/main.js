@@ -73,7 +73,7 @@ wss.on('connection', function(ws) {
     
     var id = makeid();
 
-    liveServers[id] = {socket : ws, created : new Date()};
+    liveServers[id] = {socket : ws, created : new Date(), clients : []};
     console.log(liveServers);
     
     // make sure the client is aware of its id
@@ -100,14 +100,26 @@ wss.on('connection', function(ws) {
     ws.on('message', function(message) {
 	try {
 	    var json = JSON.parse(message);
+
+	    // if the message has no valid playerid
+	    if (json.playerid == null) {
+		// to be able to pass messages the other way we need to keep track
+		// of this socket, we also assign it an id so the ccserver can
+		// identify it
+		var playerid = liveServers[json.serverid].clients.length;
+		liveServers[json.serverid].clients.push({ws: ws});
+		
+		// splice it onto the message
+		json.playerid = playerid;
+		
+		// the same if will be used by the client so let it know as well
+		ws.send(JSON.stringify({type : "assignid", playerid : playerid}));
+	    }
 	    
 	    // pass it on to the relevant chromecast device
 	    // TODO: do some sanity checking here
 	    // TODO: this is a good place to grab statistics
-	    console.log(liveServers);
-	    console.log("Passing " + message + " " + (typeof liveServers[json.serverid] !== 'undefined'));
-	    liveServers[json.serverid].socket.send(message);
-	    console.log("passed");
+	    liveServers[json.serverid].socket.send(JSON.stringify(json));
 	} catch (ex) {
 	    // close the connection
 	    ws.close();

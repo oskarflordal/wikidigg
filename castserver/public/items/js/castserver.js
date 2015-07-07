@@ -1,6 +1,6 @@
-document.getElementById("q1").innerHTML = "<h1><span>A collection of</span><strong>Page</strong> PPAPAPA</h1>";
-
 var ans1Func;
+var players = [];
+var websocket;
 
 jQuery.ajax("http://www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js", {complete: function() {
     return;
@@ -10,16 +10,8 @@ jQuery.ajax("http://www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.j
     }
     
     window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
-    document.getElementById("q1").innerHTML = "<h1><span>A collection of</span><strong>Page</strong> Blip</h1>";
-
-
-//    document.getElementById("waitforplayers").innerHTML ="<h1>step 1</h1>";
-
     var customMessageBus = window.castReceiverManager.getCastMessageBus('urn:x-cast:xyz.qupplo.qupplo');
 
-//    document.getElementById("waitforplayers").innerHTML ="<h1>step 2</h1>";
-
-    document.getElementById("q1").innerHTML = "<h1><span>A collection of</span><strong>Page</strong> BLOP bip bopp apa apapapap pdpfdsfas fpasdpfas fsdpfpsad</h1>";
     customMessageBus.onMessage = function(event) {
 
 	document.getElementById("waitforplayers").innerHTML ="<h1>rec" + event.senderId + ": " + event.data + "</h1>";
@@ -49,10 +41,8 @@ function templateMapQuestion(data) {
             name : "world_countries"
 	}
     });
-
     
-    
-    // funciton to reveal that will mark the correct location
+    // function to reveal that will mark the correct location
     ans1Func = function() {};
 }
 
@@ -63,6 +53,11 @@ function templateClassicQuestion(data) {
     document.getElementById("q1").innerHTML = template;
     document.getElementById("ans1").innerHTML = templateAns;
 }
+
+
+/**************
+ * STATE progression
+ **************/
 
 function startQuestion(q) {
     switch (q[0].type) {
@@ -86,22 +81,42 @@ function startGame(questions) {
     setTimeout( function() {showInstructions(questions)}, 1000);
 }
 
+
+
+// When we are assigned an if from the server, show this on the screen
+// so that clients may connect
 function setId(id) {
     var url = window.location.href.split('//')[1].split('/')[0]+'/items/client.html?' + id;
-//    var url = "http://qupplo.xyz/items/client.html?" + id;
-
+    
     document.getElementById("url").innerHTML = url;
     new QRCode(document.getElementById("qrcode"), url);
 }
 
-function addClient() {
-    document.getElementById("waitforplayers").innerHTML ="<h1>someone joined</h1>";
+
+// When a client is connecting
+function addClient(json) {
+    document.getElementById("waitforplayers").innerHTML += "<h1>"+json.name+"</h1>";
+    players[json.playerid] = {score : 0, name : json.name, ready : false};
+    
+    // the node server will have told the player its id as well
+}
+
+function askForQuestions() {
+    websocket.send(JSON.stringify(request));
+}
+
+function clientReady(json) {
+    players[json.playerid].ready = true;
+
+    if (players.every(function (elem, i, a){return elem.ready})) {
+	askForQuestions();
+    }
 }
 
 function fetchNewQuestions() {
     // Setup connection to server through websockets
     var url = window.location.href.split('//')[1].split('/')[0].split(':')[0];
-    var websocket = new WebSocket("ws://"+url + ":8080");
+    websocket = new WebSocket("ws://"+url + ":8080");
 
     // make a request for 5 questions of category 0
     var request = {};
@@ -117,13 +132,12 @@ function fetchNewQuestions() {
 	case "setid"     : setId(json.id); break;
 
 	// from a client
-	case "connect"   : addClient(json);
-	     websocket.send(JSON.stringify(request)); break;
+	case "connect"   : addClient(json); break;
+	case "ready"     : clientReady(json); break;
 	case "answer"    : clientAnswer(json); break;
 	}
-
     }
-
+    
     websocket.onopen = function(evt) { console.log(request); }; // no real point of wrapping
     websocket.onclose = function(evt) { console.log("websocket closed")};
     websocket.onmessage = function(evt) { onMessage(evt) };
