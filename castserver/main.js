@@ -24,9 +24,8 @@ var server = app.listen(3000, function () {
 
 // return indidivdual question nbased on category
 function generateQuestion(type) {
-    console.log("type");
     switch (type) {
-    case "classic" : return {"type" : type, "q" : "Whats the capital of Sweden?", "ans" : ["Estockholmo", "Bollywood", "Tokyo", "Sumpan"]};
+    case "classic" : return {"type" : type, "q" : "Whats the capital of Sweden?", "ans" : ["Stockholm", "Bollywood", "Tokyo", "Sumpan"]};
     case "map" : return {"type" : type, "q" : "Vart på kartan ligger Sverige?", "ans" : {"type" : "region", "location" : "sfv"}};
     }
 }
@@ -43,7 +42,6 @@ function generateQuestions(options) {
 
     // generate a question for each input
     response.q = options.types.map(generateQuestion);
-    console.log(response);
     return response;
 }
 
@@ -83,11 +81,15 @@ wss.on('connection', function(ws) {
 	try {
 	    var json = JSON.parse(message);
 	    // TODO: Do some sort of sanity checking
+	    console.log(json);
 	    switch (json.type) {
 	    case "req" : ws.send(JSON.stringify(generateQuestions(json.options))); break;
+		// pass any unknowns to the appropriate client
+	    default: console.log(liveServers[json.serverid].clients[json.playerid]); liveServers[json.serverid].clients[json.playerid].ws.send(message); break;
 	    }
 	} catch (ex) {
 	    // close the connection
+	    console.log("exception close");
 	    ws.close();
 	}
     });
@@ -108,7 +110,6 @@ wss.on('connection', function(ws) {
 		// identify it
 		var playerid = liveServers[json.serverid].clients.length;
 		liveServers[json.serverid].clients.push({ws: ws});
-		
 		// splice it onto the message
 		json.playerid = playerid;
 		

@@ -1,6 +1,7 @@
 var ans1Func;
 var players = [];
 var websocket;
+var serverid; // the way we are identified at the node 
 
 jQuery.ajax("http://www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js", {complete: function() {
     return;
@@ -54,10 +55,13 @@ function templateClassicQuestion(data) {
     document.getElementById("ans1").innerHTML = templateAns;
 }
 
-
-/**************
- * STATE progression
- **************/
+function bcastQuestion(q) {
+    var i;
+    for (i = 0; i  < players.length; ++i) {
+	websocket.send(JSON.stringify({type: "question", serverid, playerid : i, q}));
+    }
+    timeQSent = new Date();
+}
 
 function startQuestion(q) {
     switch (q[0].type) {
@@ -65,12 +69,25 @@ function startQuestion(q) {
     case "map"    : templateMapQuestion(q[0]); break;
     }
 
+    bcastQuestion(q[0]);
+    
     flipPage();
-    setTimeout(function() {flipPage();}, 8000);
+    setTimeout(function() {flipPage();
+			   // if there are no more questions, go for the score screen
+			   if (q.length == 1) {
+			       // TODO end
+			   } else {
+			   
+			       startQuestion(q.slice(1,q.length));
+			   }}, 8000);
 }
 
+/**************
+ * STATE progression
+ **************/
 function showInstructions(questions) {
     flipPage();
+    
     setTimeout(function() {startQuestion(questions)}, 1000);
 } 
 
@@ -87,6 +104,7 @@ function startGame(questions) {
 // so that clients may connect
 function setId(id) {
     var url = window.location.href.split('//')[1].split('/')[0]+'/items/client.html?' + id;
+    serverid = id;
     
     document.getElementById("url").innerHTML = url;
     new QRCode(document.getElementById("qrcode"), url);
@@ -102,6 +120,11 @@ function addClient(json) {
 }
 
 function askForQuestions() {
+    var request = {};
+    request.type = "req";
+    request.options = {};
+    request.options.types = ["classic","classic","classic","classic","classic"];
+
     websocket.send(JSON.stringify(request));
 }
 
@@ -113,16 +136,18 @@ function clientReady(json) {
     }
 }
 
+var timeQSent;
+
+function clientAnswer(json) {
+    players[json.playerid].ans = {time : (new Date - timeQSent), ans : json.ans };
+}
+
 function fetchNewQuestions() {
     // Setup connection to server through websockets
     var url = window.location.href.split('//')[1].split('/')[0].split(':')[0];
     websocket = new WebSocket("ws://"+url + ":8080");
 
     // make a request for 5 questions of category 0
-    var request = {};
-    request.type = "req";
-    request.options = {};
-    request.options.types = ["classic","classic","classic","classic","classic"];
 
     function onMessage(evt) {
 	var json = JSON.parse(evt.data);
@@ -138,12 +163,14 @@ function fetchNewQuestions() {
 	}
     }
     
-    websocket.onopen = function(evt) { console.log(request); }; // no real point of wrapping
-    websocket.onclose = function(evt) { console.log("websocket closed")};
+    websocket.onopen = function(evt) { }; // no real point of wrapping
+    websocket.onclose = function(evt) { console.log(evt)};
     websocket.onmessage = function(evt) { onMessage(evt) };
     websocket.onerror = function(evt) { console.log("error")};
-
 }
+
+// send this to get questions
+//websocket.send(JSON.stringify(request));
 
 fetchNewQuestions()
 

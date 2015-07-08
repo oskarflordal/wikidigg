@@ -1,28 +1,31 @@
 <!DOCTYPE html>
-<html lang="en" class="no-js">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-<title>Qupplo client</title>
-<link rel="stylesheet" type="text/css" href="css/default.css" />
-<link rel="stylesheet" type="text/css" href="css/component.css" />
-<link rel="stylesheet" type="text/css" href="css/animations.css" />
-<script src="js/modernizr.custom.js"></script>
-</head>
-<body>	
-<div id="pt-main" class="pt-perspective">
-<div id="waitforplayers" class="pt-page pt-page-1"><h1>Hello</h1></div>
-<div id="readyscreen" class="pt-page pt-page-1"><h1>readyscreen</h1> </div> 
-<div id="q1" class="pt-page pt-page-2"><h1><span>This should have been replaced with a question</h1></div>
-<div id="ans1" class="pt-page pt-page-2"><h1><span>Another</span><strong>Page</strong> Transitions</h1></div>
-<div id="score1" class="pt-page pt-page-2"><h1><span>Another</span><strong>Page</strong> Transitions</h1></div>
-</div>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-<script src="js/raphael.js"></script>
-<script src="js/jquery.mapael.js"></script>
-<script src="js/maps/world_countries.js"></script>
-<script src="js/pagetransitions.js"></script>
-<script src="js/client.js"></script>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width">
+	<meta name="format-detection" content="false">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="msapplication-tap-highlight" content="no">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<title>Qupplo client</title>
+	<link rel="stylesheet" href="Css/client/flattery/jo-flattery.css" type="text/css">
+	<link rel="stylesheet" href="css/client/app.css" type="text/css">
+</head>
+<body onload="App.load();">
+	<!-- load the jo library -->
+	<script src="js/client/jo_min.js"></script>
+
+	<!-- app scripts for this demo -->
+	<script src="js/client/network.js"></script>
+	<script src="js/client/controls.js"></script>
+	<script src="js/client/app.js"></script>
+	<script src="js/client/popups.js"></script>
+	<script src="js/client/connect.js"></script>
+	<script src="js/client/answer.js"></script>
+	<script src="js/client/wait.js"></script>
+	<script src="js/client/table.js"></script>
+
 </body>
 </html>
