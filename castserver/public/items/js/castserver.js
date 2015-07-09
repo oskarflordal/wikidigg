@@ -3,6 +3,17 @@ var players = [];
 var websocket;
 var serverid; // the way we are identified at the node 
 
+// FIXME: hack to identify the various pages when flipping
+var waitpage = 0;
+var readypage = 1;
+var questionpage = 2;
+var answerpage = 3;
+var scorepage = 4;
+
+var gameConfig = { questiontime : 10000,
+		   answertime : 3000,
+		 }
+
 jQuery.ajax("http://www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js", {complete: function() {
     return;
 
@@ -63,7 +74,53 @@ function bcastQuestion(q) {
     timeQSent = new Date();
 }
 
+function score(q, player) {
+    // depending on type we will score differently
+    switch (q.type) {
+    case "classic":
+	return (player.ans.ans == 0) ? 100 * (player.ans.time / gameConfig.questiontime) : 0;
+	break;
+    case "map"    : templateMapQuestion(q[0]); break;
+    }
+
+}
+
+function startScoreScreen(q) {
+
+    flipPage(scorepage);
+
+    // there should probably be a nice animation of adding the score here
+    for (i = 0; i  < players.length; ++i) {
+	players[i].score += players[i].nextscore;
+    }
+    
+    // if there are no more questions, go for the score screen
+    if (q.length == 1) {
+	// TODO end
+    } else {
+	startQuestion(q.slice(1,q.length));
+    }		   
+}
+    
+
+
+function startAnswer(q) {
+    // Make sure we score the players before they had a chance to see the answers
+    for (i = 0; i  < players.length; ++i) {
+	players[i].nextscore = score(q[0], players[i]);
+    }
+
+    flipPage(answerpage);
+
+
+    // Show the correct answer for a while and then go to score screen
+    setTimeout(function() {startScoreScreen(q)}, gameConfig.answertime);
+
+}
+
 function startQuestion(q) {
+
+    // this sets up all the pages, from now on, we only need to swap them around
     switch (q[0].type) {
     case "classic": templateClassicQuestion(q[0]); break;
     case "map"    : templateMapQuestion(q[0]); break;
@@ -71,22 +128,15 @@ function startQuestion(q) {
 
     bcastQuestion(q[0]);
     
-    flipPage();
-    setTimeout(function() {flipPage();
-			   // if there are no more questions, go for the score screen
-			   if (q.length == 1) {
-			       // TODO end
-			   } else {
-			   
-			       startQuestion(q.slice(1,q.length));
-			   }}, 8000);
+    flipPage(questionpage);
+    setTimeout(function() {startAnswer(q)}, gameConfig.questiontime);
 }
 
 /**************
  * STATE progression
  **************/
 function showInstructions(questions) {
-    flipPage();
+//    flipPage(0);
     
     setTimeout(function() {startQuestion(questions)}, 1000);
 } 
@@ -114,11 +164,12 @@ function setId(id) {
 // When a client is connecting
 function addClient(json) {
     document.getElementById("waitforplayers").innerHTML += "<h1>"+json.name+"</h1>";
-    players[json.playerid] = {score : 0, name : json.name, ready : false};
+    players[json.playerid] = {score : 0, nextscore : 0, name : json.name, ready : false, ans : {time : -1, ans : -1}};
     
     // the node server will have told the player its id as well
 }
 
+// Send the request for questions, when we get a reply we will move on
 function askForQuestions() {
     var request = {};
     request.type = "req";
@@ -142,7 +193,7 @@ function clientAnswer(json) {
     players[json.playerid].ans = {time : (new Date - timeQSent), ans : json.ans };
 }
 
-function fetchNewQuestions() {
+function connectToNode() {
     // Setup connection to server through websockets
     var url = window.location.href.split('//')[1].split('/')[0].split(':')[0];
     websocket = new WebSocket("ws://"+url + ":8080");
@@ -172,7 +223,7 @@ function fetchNewQuestions() {
 // send this to get questions
 //websocket.send(JSON.stringify(request));
 
-fetchNewQuestions()
+connectToNode();
 
 // Protocol to node server:
 //

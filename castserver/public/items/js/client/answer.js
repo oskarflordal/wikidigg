@@ -71,7 +71,8 @@ function displayAnswers(json) {
     currentAnswer = -1;
     
     submitButton = new joButton("Submit answer").selectEvent.subscribe(butSubmitAns)
-
+    submitButton.enable();
+    
     answerCard = new joCard([
 	new joDraggableList(list, undefined, answerClassicConfig),
 	submitButton

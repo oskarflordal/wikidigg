@@ -1,4 +1,4 @@
-    var $main = $( '#pt-main' ),
+var $main = $( '#pt-main' ),
     $pages = $main.children( 'div.pt-page' ),
     animcursor = 1,
     pagesCount = $pages.length,
@@ -43,13 +43,13 @@
 	$pages.eq( current ).addClass( 'pt-page-current' );
     }
 
-    function flipPage() {
-	nextPage( animcursorCheck() );
+    function flipPage(target) {
+	nextPage( animcursorCheck(), target );
 	++animcursor;
     }
 	
 
-    function nextPage(options ) {
+function nextPage(options, target ) {
 	var animation = (options.animation) ? options.animation : options;
 	
 	if( isAnimating ) {
@@ -77,9 +77,9 @@
 	    }
 	}
 	
-	var $nextPage = $pages.eq( current ).addClass( 'pt-page-current' ),
+	var $nextPage = $pages.eq( target ).addClass( 'pt-page-current' ),
 	outClass = '', inClass = '';
-	
+
 	switch( animation ) {
 	    
 	case 1:
