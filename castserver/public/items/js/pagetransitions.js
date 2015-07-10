@@ -43,7 +43,8 @@ var $main = $( '#pt-main' ),
 	$pages.eq( current ).addClass( 'pt-page-current' );
     }
 
-    function flipPage(target) {
+function flipPage(target) {
+    console.log(target);
 	nextPage( animcursorCheck(), target );
 	++animcursor;
     }
@@ -76,7 +77,9 @@ function nextPage(options, target ) {
 		current = 0;
 	    }
 	}
-	
+
+        current = target;
+    
 	var $nextPage = $pages.eq( target ).addClass( 'pt-page-current' ),
 	outClass = '', inClass = '';
 

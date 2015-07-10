@@ -46,10 +46,19 @@ html, body { height: 100%; }
 /* Text Styles, Colors, Backgrounds */
 
 .pt-page h1 {
-	position: absolute;
+	position: relative;
 	font-weight: 100;
 	font-size: 2.0em;
-	line-height: 1;
+	margin: 0;
+	top: 37%;
+	width: 100%;
+	text-align: center;
+}
+
+.pt-page h2 {
+	position: relative;
+	font-weight: 100;
+	font-size: 1.6em;
 	margin: 0;
 	top: 37%;
 	width: 100%;
@@ -60,7 +69,7 @@ html, body { height: 100%; }
         display: block;
 	position: absolute;
 	top: 57%;
-	left: 50%;
+	left: 70%;
 	margin-right: -50%;
 	width: 100%;
 	align: center;

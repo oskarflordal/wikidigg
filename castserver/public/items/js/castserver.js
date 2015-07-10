@@ -12,6 +12,8 @@ var scorepage = 4;
 
 var gameConfig = { questiontime : 10000,
 		   answertime : 3000,
+		   roundscoretime : 3000,
+		   scoretime : 3000,
 		 }
 
 jQuery.ajax("http://www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js", {complete: function() {
@@ -82,7 +84,6 @@ function score(q, player) {
 	break;
     case "map"    : templateMapQuestion(q[0]); break;
     }
-
 }
 
 function startScoreScreen(q) {
@@ -94,12 +95,14 @@ function startScoreScreen(q) {
 	players[i].score += players[i].nextscore;
     }
     
-    // if there are no more questions, go for the score screen
-    if (q.length == 1) {
-	// TODO end
-    } else {
-	startQuestion(q.slice(1,q.length));
-    }		   
+    setTimeout(function() {    // if there are no more questions, go for the score screen
+	if (q.length == 1) {
+	    // TODO end
+	    
+	} else {
+	    startQuestion(q.slice(1,q.length));
+	}		   
+    }, gameConfig.roundscoretime);
 }
     
 
@@ -120,6 +123,7 @@ function startAnswer(q) {
 
 function startQuestion(q) {
 
+    console.log(q);
     // this sets up all the pages, from now on, we only need to swap them around
     switch (q[0].type) {
     case "classic": templateClassicQuestion(q[0]); break;
@@ -153,7 +157,7 @@ function startGame(questions) {
 // When we are assigned an if from the server, show this on the screen
 // so that clients may connect
 function setId(id) {
-    var url = window.location.href.split('//')[1].split('/')[0]+'/items/client.html?' + id;
+    var url = window.location.href.split('//')[1].split('/')[0]+'/items/client.html?' + id + "<br><br>";
     serverid = id;
     
     document.getElementById("url").innerHTML = url;
@@ -163,7 +167,7 @@ function setId(id) {
 
 // When a client is connecting
 function addClient(json) {
-    document.getElementById("waitforplayers").innerHTML += "<h1>"+json.name+"</h1>";
+    document.getElementById("waitforplayers").innerHTML += "<h2>"+json.name+"</h2>";
     players[json.playerid] = {score : 0, nextscore : 0, name : json.name, ready : false, ans : {time : -1, ans : -1}};
     
     // the node server will have told the player its id as well
