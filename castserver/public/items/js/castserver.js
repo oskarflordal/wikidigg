@@ -3,6 +3,8 @@ var players = [];
 var websocket;
 var serverid; // the way we are identified at the node 
 
+var gameState;
+
 // FIXME: hack to identify the various pages when flipping
 var waitpage = 0;
 var readypage = 1;
@@ -14,6 +16,7 @@ var gameConfig = { questiontime : 10000,
 		   answertime : 3000,
 		   roundscoretime : 3000,
 		   scoretime : 3000,
+		   rounds : 5,
 		 }
 
 jQuery.ajax("http://www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js", {complete: function() {
@@ -80,17 +83,23 @@ function score(q, player) {
     // depending on type we will score differently
     switch (q.type) {
     case "classic":
-	return (player.ans.ans == 0) ? 100 * (player.ans.time / gameConfig.questiontime) : 0;
+	return (player.ans.ans == 0) ? (Math.max(0, Math.min(100, Math.round(130 * ((gameConfig.questiontime - player.ans.time) / gameConfig.questiontime))))) : 0;
 	break;
     case "map"    : templateMapQuestion(q[0]); break;
     }
 }
 
 function startScoreScreen(q) {
+    // perhaps it would make sense to do this earlier
+    // TODO: there should probably be a nice animation of adding the score here
+    document.getElementById("score1").innerHTML = "<h1>Round "+(gameConfig.rounds-q.length)+" score</h1>";
+    for (i = 0; i < players.length; ++i) {
+	document.getElementById("score1").innerHTML += "<h2>"+players[i].name+ " " + +players[i].score+" (+"+players[i].nextscore+")</h2>";
+    }
 
+    
     flipPage(scorepage);
 
-    // there should probably be a nice animation of adding the score here
     for (i = 0; i  < players.length; ++i) {
 	players[i].score += players[i].nextscore;
     }
@@ -111,6 +120,7 @@ function startAnswer(q) {
     // Make sure we score the players before they had a chance to see the answers
     for (i = 0; i  < players.length; ++i) {
 	players[i].nextscore = score(q[0], players[i]);
+	players[i].ans = {time : -1, ans : -1};
     }
 
     flipPage(answerpage);
@@ -167,6 +177,9 @@ function setId(id) {
 
 // When a client is connecting
 function addClient(json) {
+    // TODO make sure we are waiting for players
+    if (gameState == "RUNNING") return;
+    
     document.getElementById("waitforplayers").innerHTML += "<h2>"+json.name+"</h2>";
     players[json.playerid] = {score : 0, nextscore : 0, name : json.name, ready : false, ans : {time : -1, ans : -1}};
     
@@ -187,6 +200,7 @@ function clientReady(json) {
     players[json.playerid].ready = true;
 
     if (players.every(function (elem, i, a){return elem.ready})) {
+	gameState = "RUNNING";
 	askForQuestions();
     }
 }
