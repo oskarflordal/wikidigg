@@ -92,7 +92,7 @@ function score(q, player) {
 function startScoreScreen(q) {
     // perhaps it would make sense to do this earlier
     // TODO: there should probably be a nice animation of adding the score here
-    document.getElementById("score1").innerHTML = "<h1>Round "+(gameConfig.rounds-q.length)+" score</h1>";
+    document.getElementById("score1").innerHTML = "<h1>Round "+(gameConfig.rounds-q.length+1)+" score</h1>";
     for (i = 0; i < players.length; ++i) {
 	document.getElementById("score1").innerHTML += "<h2>"+players[i].name+ " " + +players[i].score+" (+"+players[i].nextscore+")</h2>";
     }

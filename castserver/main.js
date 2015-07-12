@@ -63,18 +63,17 @@ function makeid() {
 }
 
 
-// This server is used for connection from the Chromcast
+// This server is used for connection from the Chromecast
 var WebSocketServer = require('ws').Server
 , wss = new WebSocketServer({port: 8080});
 wss.on('connection', function(ws) {
     // give this server a special ID and save it for later
-    
     var id = makeid();
 
     liveServers[id] = {socket : ws, created : new Date(), clients : []};
     console.log(liveServers);
     
-    // make sure the client is aware of its id
+    // make sure the ccserver is aware of its id
     ws.send(JSON.stringify({type : "setid", id : id}));
 
     ws.on('message', function(message) {
@@ -94,6 +93,11 @@ wss.on('connection', function(ws) {
 	}
     });
 });
+
+//TODO
+function saveAnswer(json) {
+
+}
 
 // This socket server is used for connection from a js-client
 var WebSocketServer = require('ws').Server
@@ -120,6 +124,12 @@ wss.on('connection', function(ws) {
 	    // pass it on to the relevant chromecast device
 	    // TODO: do some sanity checking here
 	    // TODO: this is a good place to grab statistics
+
+	    // if this is the answer to a question, Save the answer for later
+	    if (json.type == "answer") {
+		saveAnswer();
+	    }
+
 	    liveServers[json.serverid].socket.send(JSON.stringify(json));
 	} catch (ex) {
 	    // close the connection
