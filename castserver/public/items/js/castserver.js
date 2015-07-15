@@ -13,7 +13,7 @@ var answerpage = 3;
 var scorepage = 4;
 
 var gameConfig = { questiontime : 10000,
-		   answertime : 3000,
+		   answertime : 10000,
 		   roundscoretime : 3000,
 		   scoretime : 3000,
 		   rounds : 5,
@@ -48,14 +48,33 @@ var mappy;
 // these essentially replace templates, obviously it could be cleaner to move a proper templating system and move these into separate files
 function templateMapQuestion(data) {
 
-    document.getElementById("q1").innerHTML = "<h1>" + data.q + "<div class=\"container\"><div class=\"map\">Alternative content</div></div></h1>";
+    document.getElementById("q1").innerHTML = "<h1>" + data.q + "</h1>";
 
     document.getElementById("ans1").innerHTML = "<div class=\"container\"><div class=\"map\">Alternative content</div></div></h1>";
 
     mappy = $(".container").mapael({
 	map : {
-            name : "world_countries"
-	}
+	    name : "world_countries",
+	    zoom: {
+		enabled: false
+	    },
+	    defaultArea : {
+		attrs : {
+		    fill : "#eeeeee"
+		    , stroke: "#ced8d0"
+		}
+		, text : {
+		    attrs : {
+			fill : "#505444"
+		    }
+		    , attrsHover : {
+			fill : "#000"
+		    }
+		},
+		
+	    },
+	    
+	},
     });
     
     // function to reveal that will mark the correct location
@@ -143,12 +162,31 @@ function startScoreScreen(q) {
 
 function startAnswer(q) {
     // Make sure we score the players before they had a chance to see the answers
+
+
+    // TODO refactor
+    if(q[0].type = "map") {
+	var i, j;
+	var newPlots = {};
+	var deletedPlots = [];
+
+	for (i = 0, j = players.length; i < j; ++i) {
+	    newPlots[players[i].name] = {
+		latitude : players[i].ans.ans.lat,
+		longitude : players[i].ans.ans.lon
+	    }
+	}
+
+	$(".container").trigger('update', [null, newPlots, deletedPlots]);
+    }
+
     for (i = 0; i  < players.length; ++i) {
 	players[i].nextscore = score(q[0], players[i]);
 	players[i].ans = {time : -1, ans : -1};
     }
 
     flipPage(answerpage);
+
 
 
     // Show the correct answer for a while and then go to score screen
@@ -158,7 +196,6 @@ function startAnswer(q) {
 
 function startQuestion(q) {
 
-    console.log(q);
     // this sets up all the pages, from now on, we only need to swap them around
     switch (q[0].type) {
     case "classic": templateClassicQuestion(q[0]); break;
@@ -183,7 +220,6 @@ function showInstructions(questions) {
 function startGame(questions) {
     // set up one question at a time
     // setup start screen
-    console.log(questions);
     setTimeout( function() {showInstructions(questions)}, 1000);
 }
 

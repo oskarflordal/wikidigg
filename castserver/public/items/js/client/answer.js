@@ -129,7 +129,9 @@ function displayMapAnswers(json) {
 			var coords = $.fn.mapael.maps.world_countries.getInverseCoords(x,y);
 			
 			var deletedPlots = ["point"];
-			
+
+			currentAnswer = coords;
+
 			var newPlots = {
 			    "point" : {
 				latitude : coords.lat,
