@@ -10,20 +10,6 @@ Router.route('/items', function () {
     this.render('client');
 });
 
-/*
-if (Meteor.isServer) {
-  Router.map(function() {
-    this.route('serverRoute', {
-      path: '/items',
-      where: 'server',
-      action: function() {
-        var contents = Assets.getText('cast.html');
-        this.response.end(contents);
-      }
-    });
-  });
-}
-*/
 if (Meteor.isClient) {
     Session.set("qSearch", "");
     Session.set("ansSearch", "");

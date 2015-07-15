@@ -1,3 +1,4 @@
+
 App = {
 	load: function() {
 		// loading Jo is required
@@ -11,6 +12,7 @@ App = {
 		);
 		
 		// push our menu card
-		this.stack.push(joCache.get("connect"));
+	    this.stack.push(joCache.get("connect"));
+	    
 	}
 };

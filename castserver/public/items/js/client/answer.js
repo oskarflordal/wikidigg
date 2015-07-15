@@ -1,6 +1,24 @@
 var submitButton;
+// These are really ugly hacks due to me not understanding js
+var paperInst;
+
+var mappy;
 
 var answerClassicConfig = {
+    draggable:false,
+    formatItem:function (item, index) {
+	var o = new joFlexrow([
+	    new joClassyCaption(item.title, "list-item-title"),
+	]);
+	
+	return o;
+    },
+    onSelect:function(index, event) {
+	currentAnswer = event.data[index].ansid;
+    }
+};
+
+var answerMapConfig = {
     draggable:false,
     formatItem:function (item, index) {
 	var o = new joFlexrow([
@@ -55,10 +73,7 @@ function butSubmitAns() {
 
 var answerCard;
 
-// when we get a new answer, we need to display this
-// I guess ideally this should be cached properly
-function displayAnswers(json) {
-
+function displayClassicAnswers(json) {
     var list = [];
     for (var i = 0; i < json.q.ans.length; ++i) {
 	list.push({title: json.q.ans[i], ansid : i});
@@ -67,18 +82,93 @@ function displayAnswers(json) {
     // make sure we can't determine which is the correct answer
     shuffleArray(list);
 
-    // default answer
-    currentAnswer = -1;
-    
-    submitButton = new joButton("Submit answer").selectEvent.subscribe(butSubmitAns)
-    submitButton.enable();
-    
     answerCard = new joCard([
 	new joDraggableList(list, undefined, answerClassicConfig),
 	submitButton
     ]).setTitle("Answers");
 
     App.stack.push(answerCard);
+}
+
+function displayMapAnswers(json) {
+    answerCard = new joCard([
+	new joHTML("<div class=\"container\"><div class=\"map\">Alternative content</div></div>"),
+	submitButton
+    ]).setTitle("Answers");
+
+    App.stack.push(answerCard);
+
+    mappy = $(".container").mapael({
+	map : {
+	    name : "world_countries",
+	    zoom: {
+		enabled: false
+	    },
+	    afterInit : function($self, paper, areas, plots, options) {
+		paperInst = paper;
+	    },
+	    defaultArea : {
+		attrs : {
+		    fill : "#eeeeee"
+		    , stroke: "#ced8d0"
+		}
+		, text : {
+		    attrs : {
+			fill : "#505444"
+		    }
+		    , attrsHover : {
+			fill : "#000"
+		    }
+		},
+		eventHandlers: {
+		    click: function (e, id, mapElem, textElem) {
+			globalstate = e;
+			var x = e.offsetX/paperInst.width*$.fn.mapael.maps.world_countries.width;
+			var y = e.offsetY/paperInst.height*$.fn.mapael.maps.world_countries.height;
+			
+			var coords = $.fn.mapael.maps.world_countries.getInverseCoords(x,y);
+			
+			var deletedPlots = ["point"];
+			
+			var newPlots = {
+			    "point" : {
+				latitude : coords.lat,
+				longitude : coords.lon,
+			    }
+			};
+			
+			$(".container").trigger('update', [null, newPlots, deletedPlots]);
+		    }
+		},
+		
+	    },
+	    areas: {
+		"ALL" : {
+		    attrs : {
+			fill : "#ffffff",
+		    }
+		}
+	    },
+	    
+	},
+    });
+}
+
+// when we get a new answer, we need to display this
+// I guess ideally this should be cached properly
+function displayAnswers(json) {
+
+    submitButton = new joButton("Submit answer").selectEvent.subscribe(butSubmitAns)
+    submitButton.enable();
+
+    // default answer
+    currentAnswer = -1;
+
+    switch (json.q.type) {
+    case "classic": displayClassicAnswers(json); break;
+    case "map"    : displayMapAnswers(json); break;
+    }
+
 }
 
 

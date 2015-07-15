@@ -970,14 +970,12 @@
 	* @param mapElem mapElem the map element
 	* @param textElem the optional text element (within the map element)
 	*/
-    /*
 	$.fn.mapael.elemHover = function (paper, mapElem, textElem) {
 		mapElem.animate(mapElem.attrsHover, mapElem.attrsHover.animDuration);
 	    textElem && textElem.animate(textElem.attrsHover, textElem.attrsHover.animDuration);
 	    console.log(mapElem);
 		paper.safari();
 	};
-	*/	
 	/**
 	* Set he behaviour for "mouseout" event
 	* @param paper Raphael paper object

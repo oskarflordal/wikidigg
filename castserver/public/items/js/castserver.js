@@ -52,7 +52,6 @@ function templateMapQuestion(data) {
 
     document.getElementById("ans1").innerHTML = "<div class=\"container\"><div class=\"map\">Alternative content</div></div></h1>";
 
-    
     mappy = $(".container").mapael({
 	map : {
             name : "world_countries"
@@ -71,6 +70,17 @@ function templateClassicQuestion(data) {
     document.getElementById("ans1").innerHTML = templateAns;
 }
 
+function templateSortQuestion(data) {
+    var template = "<h1>" + data.q + "</h1>";
+    var templateAns = "";
+    for (var i = 0; i  < data.ans.length; ++i) {
+	templteAns += "<h1>" + data.ans[i] + "</h1>";
+    }
+
+    document.getElementById("q1").innerHTML = template;
+    document.getElementById("ans1").innerHTML = templateAns;
+}
+
 function bcastQuestion(q) {
     var i;
     for (i = 0; i  < players.length; ++i) {
@@ -79,13 +89,28 @@ function bcastQuestion(q) {
     timeQSent = new Date();
 }
 
+function sorted(list) {
+    var num = 0;
+    var i,j;
+    for (i = 0, j = list.length; i < j; ++i) {
+	if (list[i] == i) {
+	    num++;
+	}
+    }
+    return num;
+}
+
 function score(q, player) {
     // depending on type we will score differently
     switch (q.type) {
     case "classic":
 	return (player.ans.ans == 0) ? (Math.max(0, Math.min(100, Math.round(130 * ((gameConfig.questiontime - player.ans.time) / gameConfig.questiontime))))) : 0;
 	break;
-    case "map"    : templateMapQuestion(q[0]); break;
+    case "sort":
+	var numSorted = sorted(player.ans.ans);
+	return (Math.max(0, Math.min(100, Math.round((numSorted/player.ans.ans.length)*180 * ((gameConfig.questiontime - player.ans.time) / gameConfig.questiontime)))));
+	break;
+    case "map"    : console.log("FIXME"); break;
     }
 }
 
@@ -191,7 +216,7 @@ function askForQuestions() {
     var request = {};
     request.type = "req";
     request.options = {};
-    request.options.types = ["classic","classic","classic","classic","classic"];
+    request.options.types = ["map","classic","classic","classic","classic"];
 
     websocket.send(JSON.stringify(request));
 }
