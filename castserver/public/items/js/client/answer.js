@@ -139,7 +139,7 @@ function displayMapAnswers(json) {
 			    }
 			};
 			
-			$(".container").trigger('update', [null, newPlots, deletedPlots]);
+			$(".container").trigger('update', [null, newPlots, deletedPlots, {animDuration : 1000}]);
 		    }
 		},
 		

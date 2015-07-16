@@ -14,5 +14,8 @@ App = {
 		// push our menu card
 	    this.stack.push(joCache.get("connect"));
 	    
+
+//	    var q = {q : {type : "map"}};
+//	    displayAnswers(q);
 	}
 };

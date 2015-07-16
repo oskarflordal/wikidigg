@@ -217,12 +217,14 @@
 						if (typeof plots[id] == "undefined") {
 							options.plots[id] = newPlots[id];
 							plots[id] = $.fn.mapael.drawPlot(id, options, mapConf, paper, $tooltip);
-							if (animDuration > 0) {
-								plots[id].mapElem.attr({opacity : 0});
-								plots[id].textElem.attr({opacity : 0});
-								plots[id].mapElem.animate({"opacity": (typeof plots[id].mapElem.originalAttrs.opacity != "undefined") ? plots[id].mapElem.originalAttrs.opacity : 1}, animDuration);
-								plots[id].textElem.animate({"opacity": (typeof plots[id].textElem.originalAttrs.opacity != "undefined") ? plots[id].textElem.originalAttrs.opacity : 1}, animDuration);
+						    if (animDuration > 0) {
+							plots[id].mapElem.attr({opacity : 0});
+							plots[id].mapElem.animate({"opacity": (typeof plots[id].mapElem.originalAttrs.opacity != "undefined") ? plots[id].mapElem.originalAttrs.opacity : 1}, animDuration);
+							if (typeof plots[id].textElem != "undefined") {
+							    plots[id].textElem.attr({opacity : 0});
+							    plots[id].textElem.animate({"opacity": (typeof plots[id].textElem.originalAttrs.opacity != "undefined") ? plots[id].textElem.originalAttrs.opacity : 1}, animDuration);
 							}
+						    }
 						}
 					}
 				}
@@ -973,7 +975,6 @@
 	$.fn.mapael.elemHover = function (paper, mapElem, textElem) {
 		mapElem.animate(mapElem.attrsHover, mapElem.attrsHover.animDuration);
 	    textElem && textElem.animate(textElem.attrsHover, textElem.attrsHover.animDuration);
-	    console.log(mapElem);
 		paper.safari();
 	};
 	/**

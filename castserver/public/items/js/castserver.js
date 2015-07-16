@@ -17,7 +17,14 @@ var gameConfig = { questiontime : 10000,
 		   roundscoretime : 3000,
 		   scoretime : 3000,
 		   rounds : 5,
-		 }
+		 };
+
+var gameColors = ["#ff0000",
+		  "#00ff00",
+		  "#0000ff",
+		  "#ffff00",
+		  "#00ffff",
+		 "#ffffff", ];
 
 jQuery.ajax("http://www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js", {complete: function() {
     return;
@@ -60,8 +67,8 @@ function templateMapQuestion(data) {
 	    },
 	    defaultArea : {
 		attrs : {
-		    fill : "#eeeeee"
-		    , stroke: "#ced8d0"
+		    fill : "#7bb7fa" // TODO: sample from css?
+		    , stroke: "#111111"
 		}
 		, text : {
 		    attrs : {
@@ -161,25 +168,35 @@ function startScoreScreen(q) {
 
 
 function startAnswer(q) {
-    // Make sure we score the players before they had a chance to see the answers
-
-
     // TODO refactor
     if(q[0].type = "map") {
 	var i, j;
 	var newPlots = {};
-	var deletedPlots = [];
+	var deletedPlots = {};
+
+	newPlots["correct"] = {
+	    latitude : q[0].ans.location.latitude,
+	    longitude : q[0].ans.location.longitude,
+	    attrs : {
+		fill : "#333333",
+		size : 40,
+	    }
+	}
 
 	for (i = 0, j = players.length; i < j; ++i) {
 	    newPlots[players[i].name] = {
 		latitude : players[i].ans.ans.lat,
-		longitude : players[i].ans.ans.lon
+		longitude : players[i].ans.ans.lon,
+		attrs : {
+		    fill : gameColors[i]
+		}
 	    }
 	}
-
-	$(".container").trigger('update', [null, newPlots, deletedPlots]);
+	
+	$(".container").trigger('update', [null, newPlots, deletedPlots, {animDuration : 3000}]);
     }
 
+    // Make sure we score the players before they had a chance to see the answers
     for (i = 0; i  < players.length; ++i) {
 	players[i].nextscore = score(q[0], players[i]);
 	players[i].ans = {time : -1, ans : -1};
