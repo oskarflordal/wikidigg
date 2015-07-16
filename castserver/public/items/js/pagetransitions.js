@@ -44,7 +44,6 @@ var $main = $( '#pt-main' ),
     }
 
 function flipPage(target) {
-    console.log(target);
 	nextPage( animcursorCheck(), target );
 	++animcursor;
     }

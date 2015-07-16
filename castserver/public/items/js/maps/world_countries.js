@@ -29,13 +29,13 @@
 					getInverseCoords : function (x, y) {
 						var xfactor = 2.752;
 						var xoffset = 473.75;
-					    var lon = (x-xoffset)/xfactor;
+					    var longitude = (x-xoffset)/xfactor;
 						
 						var yfactor = -2.753;
 						var yoffset = 231;
-					    var lat = (y-yoffset)/yfactor;
+					    var latitude = (y-yoffset)/yfactor;
 					    
-						return {lon, lat};
+						return {longitude, latitude};
 					},
 				    'elems': {
 					"ALL" : "M0,0l2000,0l0,2000l-2000,0z", 

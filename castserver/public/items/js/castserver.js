@@ -127,17 +127,44 @@ function sorted(list) {
     return num;
 }
 
+function degToRad(deg) {
+    return deg * (Math.PI/180);
+}
+
+// Calculate distance in kilometers between two points, used for scoring
+function calcDistanceOnMap(from, to) {
+    var earthRad = 6371;
+    var degLat = degToRad(to.latitude-from.latitude);
+    var degLon = degToRad(to.longitude-from.longitude);
+    var a = Math.sin(degLat/2)*Math.sin(degLat/2)+
+	Math.cos(degToRad(from.latitude))*Math.cos(degToRad(to.latitude))*
+	Math.sin(degLon/2)*Math.sin(degLon/2);
+    var c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    var d = earthRad*c; 
+    return d == NaN ? 999999 : d;
+}
+
+// min max and round to score range
+function trimScore(val) {
+    return Math.max(0, Math.min(100, Math.round(val)));
+}
+
 function score(q, player) {
+    // No answer given
+    // TODO, more stringent testing may be required
+    if (player.ans.ans == -1) return 0;
+    
     // depending on type we will score differently
     switch (q.type) {
     case "classic":
-	return (player.ans.ans == 0) ? (Math.max(0, Math.min(100, Math.round(130 * ((gameConfig.questiontime - player.ans.time) / gameConfig.questiontime))))) : 0;
+	return (player.ans.ans == 0) ? (trimScore(130 * ((gameConfig.questiontime - player.ans.time) / gameConfig.questiontime))) : 0;
 	break;
     case "sort":
 	var numSorted = sorted(player.ans.ans);
-	return (Math.max(0, Math.min(100, Math.round((numSorted/player.ans.ans.length)*180 * ((gameConfig.questiontime - player.ans.time) / gameConfig.questiontime)))));
+	return (trimScore((numSorted/player.ans.ans.length)*100));
 	break;
-    case "map"    : console.log("FIXME"); break;
+    case "map"    :
+	return trimScore(130*(q.ans.maxdistance-calcDistanceOnMap(player.ans.ans, q.ans.location))/(q.ans.maxdistance)); break;
     }
 }
 
@@ -186,8 +213,8 @@ function startAnswer(q) {
 
 	for (i = 0, j = players.length; i < j; ++i) {
 	    newPlots[players[i].name] = {
-		latitude : players[i].ans.ans.lat,
-		longitude : players[i].ans.ans.lon,
+		latitude : players[i].ans.ans.latitude,
+		longitude : players[i].ans.ans.longitude,
 		attrs : {
 		    fill : gameColors[i]
 		}

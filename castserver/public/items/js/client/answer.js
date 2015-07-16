@@ -171,11 +171,11 @@ function displayMapAnswers(json) {
 
 			var newPlots = {
 			    "point" : {
-				latitude : coords.lat,
-				longitude : coords.lon,
+				latitude : coords.latitude,
+				longitude : coords.longitude,
 			    }
 			};
-			
+
 			$(".container").trigger('update', [null, newPlots, deletedPlots, {animDuration : 1000}]);
 		    }
 		},
