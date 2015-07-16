@@ -100,12 +100,13 @@ function templateSortQuestion(data) {
     var template = "<h1>" + data.q + "</h1>";
     var templateAns = "";
     for (var i = 0; i  < data.ans.length; ++i) {
-	templteAns += "<h1>" + data.ans[i] + "</h1>";
+	templateAns += "<h1>" + data.ans[i] + "</h1>";
     }
 
     document.getElementById("q1").innerHTML = template;
     document.getElementById("ans1").innerHTML = templateAns;
 }
+
 
 function bcastQuestion(q) {
     var i;
@@ -169,7 +170,7 @@ function startScoreScreen(q) {
 
 function startAnswer(q) {
     // TODO refactor
-    if(q[0].type = "map") {
+    if(q[0].type == "map") {
 	var i, j;
 	var newPlots = {};
 	var deletedPlots = {};
@@ -215,6 +216,7 @@ function startQuestion(q) {
 
     // this sets up all the pages, from now on, we only need to swap them around
     switch (q[0].type) {
+    case "sort"   : templateSortQuestion(q[0]); break;
     case "classic": templateClassicQuestion(q[0]); break;
     case "map"    : templateMapQuestion(q[0]); break;
     }
@@ -269,7 +271,7 @@ function askForQuestions() {
     var request = {};
     request.type = "req";
     request.options = {};
-    request.options.types = ["map","classic","classic","classic","classic"];
+    request.options.types = ["sort", "map","classic","classic","classic","classic"];
 
     websocket.send(JSON.stringify(request));
 }

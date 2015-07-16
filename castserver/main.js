@@ -26,6 +26,7 @@ var server = app.listen(3000, function () {
 function generateQuestion(type) {
     switch (type) {
     case "classic" : return {"type" : type, "q" : "Whats the capital of Sweden?", "ans" : ["Stockholm", "Bollywood", "Tokyo", "Sumpan"]};
+    case "sort" : return {"type" : type, "q" : "Sortera dessa svenska städer efter storlek?", "ans" : ["Stockholm", "Göteborg", "Malmö", "Uppsala", "Eskilstuna", "Flen"]};
     case "map" : return {"type" : type, "q" : "Vart på kartan ligger Sverige?", "ans" : {"type" : "region", "location" : {longitude : 5.0, latitude : 3.3}}};
     }
 }

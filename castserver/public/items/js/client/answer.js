@@ -4,6 +4,8 @@ var paperInst;
 
 var mappy;
 
+var answerHook = null;
+
 var answerClassicConfig = {
     draggable:false,
     formatItem:function (item, index) {
@@ -68,6 +70,10 @@ function shuffleArray(array) {
 function butSubmitAns() {
     submitButton.disable();
 
+    if (answerHook != null) {
+	answerHook();
+    }
+    
     answerToServer(currentAnswer);
 }
 
@@ -82,8 +88,37 @@ function displayClassicAnswers(json) {
     // make sure we can't determine which is the correct answer
     shuffleArray(list);
 
+    answerHook = null;
+
     answerCard = new joCard([
 	new joDraggableList(list, undefined, answerClassicConfig),
+	submitButton
+    ]).setTitle("Answers");
+
+    App.stack.push(answerCard);
+}
+
+function displaySortAnswers(json) {
+    var list = [];
+    for (var i = 0; i < json.q.ans.length; ++i) {
+	list.push({title: json.q.ans[i], ansid : i});
+    }
+
+    // make sure we can't determine which is the correct answer
+    shuffleArray(list);
+
+    var draggableList = new joDraggableList(list, undefined, answerSortConfig);
+    
+    answerHook = function() {
+	var i, j;
+	currentAnswer = [];
+	for (i = 0, j = list.length; i<j; ++i) {
+	    currentAnswer.push(list[i].ansid);
+	}
+    }
+    
+    answerCard = new joCard([
+	draggableList,
 	submitButton
     ]).setTitle("Answers");
 
@@ -97,6 +132,8 @@ function displayMapAnswers(json) {
     ]).setTitle("Answers");
 
     App.stack.push(answerCard);
+
+    answerHook = null;
 
     mappy = $(".container").mapael({
 	map : {
@@ -168,6 +205,7 @@ function displayAnswers(json) {
 
     switch (json.q.type) {
     case "classic": displayClassicAnswers(json); break;
+    case "sort"   : displaySortAnswers(json); break;
     case "map"    : displayMapAnswers(json); break;
     }
 
