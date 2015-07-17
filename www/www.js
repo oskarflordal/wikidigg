@@ -2,14 +2,6 @@ Questions = new Mongo.Collection("questions");
 Wordvector = new Mongo.Collection("wordvec");
 
 
-Router.route('/', function () {
-  this.render('home');
-});
-
-Router.route('/items', function () {
-    this.render('client');
-});
-
 if (Meteor.isClient) {
     Session.set("qSearch", "");
     Session.set("ansSearch", "");
