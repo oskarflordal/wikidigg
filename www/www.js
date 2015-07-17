@@ -1,7 +1,6 @@
 Questions = new Mongo.Collection("questions");
 Wordvector = new Mongo.Collection("wordvec");
 
-
 if (Meteor.isClient) {
     Session.set("qSearch", "");
     Session.set("ansSearch", "");
@@ -148,6 +147,10 @@ if (Meteor.isClient) {
 	"clear .newq": function (event) {
 	    // Clear form
 	    formClear(event.target);
+	},
+	"change #classpicker": function (event) {
+	    // Clear form
+	    $(event.target).val();
 	}
     });
     Template.question.events({
