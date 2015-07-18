@@ -251,7 +251,7 @@ if (Meteor.isClient) {
     Template.qform.helpers({
 	selectclassic : function() {
 	    var type = Session.get("typeSelect");
-	    return type == "classic" || type == "sort";
+	    return type == "classic";
 	},
 	selectrange : function() {
 	    var type = Session.get("typeSelect");
