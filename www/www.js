@@ -42,6 +42,14 @@ if (Meteor.isClient) {
 	target.ans5.value = "";
     }
 
+    function formClearRange(target) {
+	target.question.value = "";
+	target.ans.value = "";
+	target.rangeLo.value = "";
+	target.rangeHi.value = "";
+	target.stepSz.value = "";
+    }
+
     var lastAnsSearch = -1;
     var lastQSearch = -1;
     Template.body.events({
@@ -60,8 +68,11 @@ if (Meteor.isClient) {
 		}, 300);
 	    }
 
+	    var type = Session.get("typeSelect");
+	    
 	    // If we updated ans0 we will suggest answers
-	    if (Session.get("ansSearch") != form.ans0.value) {
+	    if ((type == "classic" || type == "sort") &&
+		Session.get("ansSearch") != form.ans0.value) {
 		// make sure we have  a delay so we don't hammer the server
 		// and queue up a bunch of publications
 		if (lastAnsSearch != -1) {
@@ -102,45 +113,104 @@ if (Meteor.isClient) {
 
     });
 
+    function buildClassicAnswer(event) {
+	var ans = [];
+	var ans0 = event.target.ans0.value;
+	var ans1 = event.target.ans1.value;
+	var ans2 = event.target.ans2.value;
+	var ans3 = event.target.ans3.value;
+	var ans4 = event.target.ans4.value;
+	var ans5 = event.target.ans5.value;
+	
+	if (/\S/.test(ans0)) {
+	    ans.push(ans0);
+	} else { return false}
+	if (/\S/.test(ans1)) {
+	    ans.push(ans1);
+	    }
+	if (/\S/.test(ans2)) {
+	    ans.push(ans2);
+	}
+	if (/\S/.test(ans3)) {
+	    ans.push(ans3);
+	}
+	if (/\S/.test(ans4)) {
+	    ans.push(ans4);
+	}
+	if (/\S/.test(ans5)) {
+	    ans.push(ans5);
+	}
 
+	return ans;
+    }
+
+    function buildRangeAnswer(event) {
+	var ans = parseInt(event.target.ans.value);
+	var rangeLo = parseInt(event.target.rangeLo.value);
+	var rangeHi = parseInt(event.target.rangeHi.value);
+	var stepSz = parseInt(event.target.stepSz.value);
+
+	// Sanity checks
+	// Make sure we can hit the the correct answer
+	if ( !((((ans-rangeLo)%stepSz) == 0) &&
+	       (((rangeHi-rangeLo)%stepSz) == 0) &&
+	       ((ans >= rangeLo) && (ans <= rangeHi)) &&
+	       (rangeLo < rangeHi))) {
+	    console.log(ans);
+	    console.log(rangeLo);
+	    console.log(rangeHi);
+	    console.log(stepSz);
+
+	    console.log((((ans-rangeLo)%stepSz) == 0));
+	    console.log( (((rangeHi-rangeLo)%stepSz) == 0));
+	    console.log(((ans >= rangeLo)));
+	    console.log(ans <= rangeHi);
+	    console.log((rangeLo < rangeHi));
+	    return false;
+	}
+	
+	
+	if (/\S/.test(ans) && /\S/.test(rangeLo) && /\S/.test(rangeHi) && /\S/.test(stepSz)) {
+	    return {ans : ans, rangeLo : rangeLo, rangeHi : rangeHi,  stepSz : stepSz};
+	} else {
+	    return false;
+	}
+    }
 
     Template.body.events({
 	"submit .newq": function (event) {
 	    // This function is called when the new task form is submitted
 	    
 	    var question = event.target.question.value;
-	    var ans0 = event.target.ans0.value;
-	    var ans1 = event.target.ans1.value;
-	    var ans2 = event.target.ans2.value;
-	    var ans3 = event.target.ans3.value;
-	    var ans4 = event.target.ans4.value;
-	    var ans5 = event.target.ans5.value;
-	    var type = "classic"
+	    var type = Session.get("typeSelect");
 
-	    var anslist = [];
-	    if (/\S/.test(ans0)) {
-	    } else { return false}
-	    if (/\S/.test(ans1)) {
-		anslist.push(ans1);
-	    }
-	    if (/\S/.test(ans2)) {
-		anslist.push(ans2);
-	    }
-	    if (/\S/.test(ans3)) {
-		anslist.push(ans3);
-	    }
-	    if (/\S/.test(ans4)) {
-		anslist.push(ans4);
-	    }
-	    if (/\S/.test(ans5)) {
-		anslist.push(ans5);
+	    var ans;
+	    switch(type) {
+	    case "classic":
+		ans = buildClassicAnswer(event);
+		// Clear form
+		formClear(event.target);
+		break;
+	    case "range":
+		ans = buildRangeAnswer(event);
+		formClearRange(event.target);
+		break;
+	    case "sort":
+		ans = buildClassicAnswer(event); // looks the same
+		// Clear form
+		formClear(event.target);
+		break;
+	    case "map":
+		ans = buildMapAnswer(event);
+		break;
 	    }
 
-	    Meteor.call("addQuestion", question, ans0, anslist, type);
+	    if (ans == false) {
+		return false;
+	    }
 	    
-	    // Clear form
-	    formClear(event.target);
-
+	    Meteor.call("addQuestion", question, ans, type);
+	    
 	    // Prevent default form submit
 	    return false;
 	},
@@ -151,7 +221,7 @@ if (Meteor.isClient) {
 	"change #classpicker": function (event) {
 	    // Clear form
 	    console.log($(event.target).val());
-	    var type = Session.set("typeSelet", $(event.target).val());
+	    var type = Session.set("typeSelect", $(event.target).val());
 	}
     });
     Template.question.events({
@@ -181,9 +251,20 @@ if (Meteor.isClient) {
     Template.qform.helpers({
 	selectclassic : function() {
 	    var type = Session.get("typeSelect");
-	    console.log(type);
-	    return type == "classic";
-	}
+	    return type == "classic" || type == "sort";
+	},
+	selectrange : function() {
+	    var type = Session.get("typeSelect");
+	    return type == "range";
+	},
+	selectmap : function() {
+	    var type = Session.get("typeSelect");
+	    return type == "map";
+	},
+	selectsort : function() {
+	    var type = Session.get("typeSelect");
+	    return type == "sort";
+	},
     });
     
     Accounts.ui.config({
@@ -218,18 +299,17 @@ if (Meteor.isServer) {
 }
 
 Meteor.methods({
-  addQuestion: function (question, ans, other, type) {
+  addQuestion: function (question, ans, type) {
     // Make sure the user is logged in before inserting a task
     if (! Meteor.userId()) {
       throw new Meteor.Error("not-authorized");
     }
 
       // TODO make potentially some checks on the data
-
       Questions.insert({
 	  text: question,
 	  owner: Meteor.userId(), 
-	  ans : [ans].concat(other),
+	  ans : ans,
 	  type: type,
 	  username: Meteor.user().profile.name,
 	  createdAt: new Date() // current time

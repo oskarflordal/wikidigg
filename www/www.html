@@ -32,7 +32,6 @@
   </div>
 </body>
 
-  
 <template name="qform">
   <div style="visibility:hidden;">{{typeSelect}}</div> <!-- make sure we trigger updates when select is changed-->
   <form class="newq">
@@ -40,15 +39,25 @@
 	  <option value="classic">Classic</option>
 	  <option value="map">Map</option>
 	  <option value="sort">Sort</option>
+	  <option value="range">Range</option>
 	</select>
-	{{#if selectclassic}}
 	<input type="text" name="question" placeholder="Type to add new question" />
+	{{#if selectclassic}}
 	<input type="text" name="ans0" placeholder="Correct answer" />
 	<input type="text" name="ans1" placeholder="Other answer" />
 	<input type="text" name="ans2" placeholder="Other answer" />
 	<input type="text" name="ans3" placeholder="Other answer" />
 	<input type="text" name="ans4" placeholder="Other answer" />
 	<input type="text" name="ans5" placeholder="Other answer" />
+	{{/if}}
+	{{#if selectrange}}
+	<input type="text" name="ans" placeholder="Correct value" />-
+	<input type="text" name="rangeLo" placeholder="Lower value" />-
+	<input type="text" name="rangeHi" placeholder="Upper value" />
+	<input type="text" name="stepSz" placeholder="Step size" />
+	
+	{{/if}}
+	{{#if selectmap}}
 	{{/if}}
 	<input type="submit" value="Submit">
 	<button type="clear" value="Clear">Clear</button>
@@ -60,13 +69,13 @@
     <button class="delete">&times;</button>
     <span class="question">{{text}} </span><br>
     {{#if typeclassic type}}
-    <span class="answer"><strong>{{ans.[0]}}</strong> :  {{#each nonfirst ans}}{{this}} {{/each}}</span><br>
+	TYPE:CLASSIC<span class="answer"><strong>{{ans.[0]}}</strong> :  {{#each nonfirst ans}}{{this}} {{/each}}</span><br>
     {{/if}}
     {{#if typerange type}}
-    <span class="answer"><strong>{{ans}}</strong> :  {{#each ans}}{{this}} {{/each}}</span><br>
+	TYPE:RANGE<span class="answer"><strong>{{ans.ans}}</strong> [{{ans.rangeLo}}-{{ans.rangeHi}}]({{ans.stepSz}})  </span><br>
     {{/if}}
     {{#if typesort type}}
-    <span class="answer"><strong>{{#each ans}}{{this}} {{/each}}</strong></span><br>
+	TYPE:SORT<span class="answer"><strong>{{#each ans}}{{this}} {{/each}}</strong></span><br>
     {{/if}}
   <span class="meta"><strong>Author</strong> :  {{username}} ({{relcreated}})</span>
   </li>
