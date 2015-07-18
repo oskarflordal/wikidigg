@@ -3,6 +3,7 @@ Wordvector = new Mongo.Collection("wordvec");
 
 if (Meteor.isClient) {
     Session.set("qSearch", "");
+    Session.set("typeSelect", "classic");
     Session.set("ansSearch", "");
     Tracker.autorun(function () {
 	Meteor.subscribe("questions", Session.get("qSearch"), Session.get("ansSearch"), Session.get("showAll"));
@@ -114,7 +115,7 @@ if (Meteor.isClient) {
 	    var ans3 = event.target.ans3.value;
 	    var ans4 = event.target.ans4.value;
 	    var ans5 = event.target.ans5.value;
-	    var type = "standard"
+	    var type = "classic"
 
 	    var anslist = [];
 	    if (/\S/.test(ans0)) {
@@ -134,9 +135,8 @@ if (Meteor.isClient) {
 	    if (/\S/.test(ans5)) {
 		anslist.push(ans5);
 	    }
-	    var category = 0;
 
-	    Meteor.call("addQuestion", question, ans0, anslist, category);
+	    Meteor.call("addQuestion", question, ans0, anslist, type);
 	    
 	    // Clear form
 	    formClear(event.target);
@@ -150,7 +150,8 @@ if (Meteor.isClient) {
 	},
 	"change #classpicker": function (event) {
 	    // Clear form
-	    $(event.target).val();
+	    console.log($(event.target).val());
+	    var type = Session.set("typeSelet", $(event.target).val());
 	}
     });
     Template.question.events({
@@ -162,6 +163,26 @@ if (Meteor.isClient) {
     Template.question.helpers({
 	relcreated : function() {
 	    return moment(this.createdAt).fromNow();
+	},
+	nonfirst : function(val) {
+	    return val.slice(1,val.length);
+	},
+	typeclassic : function(val) {
+	    return val == "classic";
+	},
+	typerange : function(val) {
+	    return val == "range";
+	},
+	typesort : function(val) {
+	    return val == "sort";
+	},
+    });
+
+    Template.qform.helpers({
+	selectclassic : function() {
+	    var type = Session.get("typeSelect");
+	    console.log(type);
+	    return type == "classic";
 	}
     });
     
@@ -197,7 +218,7 @@ if (Meteor.isServer) {
 }
 
 Meteor.methods({
-  addQuestion: function (question, ans, other, category) {
+  addQuestion: function (question, ans, other, type) {
     // Make sure the user is logged in before inserting a task
     if (! Meteor.userId()) {
       throw new Meteor.Error("not-authorized");
@@ -208,9 +229,8 @@ Meteor.methods({
       Questions.insert({
 	  text: question,
 	  owner: Meteor.userId(), 
-	  ans : ans,
-	  other: other,
-	  category: category,
+	  ans : [ans].concat(other),
+	  type: type,
 	  username: Meteor.user().profile.name,
 	  createdAt: new Date() // current time
       });
