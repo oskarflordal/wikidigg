@@ -9,7 +9,7 @@ app.get('/', function (req, res) {
 
 app.use(express.static(__dirname + '/public'));
 
-var server = app.listen(3000, function () {
+var server = app.listen(3333, function () {
 
   var host = server.address().address;
   var port = server.address().port;
@@ -17,7 +17,46 @@ var server = app.listen(3000, function () {
   console.log('Example app listening at http://%s:%s', host, port);
 });
 
+// connect to the quesiton database
+var mongodb = require('mongodb');
+var MongoClient = mongodb.MongoClient;
 
+var mongonConnection;
+
+var url = 'mongodb://localhost:27017/meteor';
+
+// Since questions will be few, lets grab all of them from the db
+// ans store them locally
+//TODO FIXME
+var questionCollection;
+
+// Use connect method to connect to the Server
+MongoClient.connect(url, function (err, db) {
+	if (err) {
+	    console.log('Unable to connect to the mongoDB server. Error:', err);
+	} else {
+	    //HURRAY!! We are connected. :)
+	    console.log('Connection established to', url);
+	    
+	    // do some work here with the database.
+	    mongoConnection = db;
+
+	    var collection = db.collection('questions');
+
+	    collection.find({}).toArray(function (err, result) {
+		    if (err) {
+			console.log("Error");
+			console.log(err);
+		    } else if (result.length) {
+			questionCollection = result;
+		    } else {
+			console.log('No questions found');
+		    }
+		});
+
+	    setupWSServers();
+	}
+    });
 
 
 // Websocket server to deliver questions
@@ -46,7 +85,6 @@ function generateQuestions(options) {
     return response;
 }
 
-
 var liveServers = {};
 
 function makeid() {
@@ -63,22 +101,28 @@ function makeid() {
     return "12345";
 }
 
+//TODO
+function saveAnswer(json) {
 
-// This server is used for connection from the Chromecast
-var WebSocketServer = require('ws').Server
-, wss = new WebSocketServer({port: 8080});
-wss.on('connection', function(ws) {
-    // give this server a special ID and save it for later
-    var id = makeid();
+}
 
-    liveServers[id] = {socket : ws, created : new Date(), clients : []};
-    console.log(liveServers);
-    
-    // make sure the ccserver is aware of its id
-    ws.send(JSON.stringify({type : "setid", id : id}));
+function setupWSServers() {
+    // This server is used for connection from the Chromecast
+    var WebSocketServer = require('ws').Server;
+    var wss = new WebSocketServer({port: 8080});
 
-    ws.on('message', function(message) {
-	try {
+    wss.on('connection', function(ws) {
+	    // give this server a special ID and save it for later
+	    var id = makeid();
+	    
+	    liveServers[id] = {socket : ws, created : new Date(), clients : []};
+	    console.log(liveServers);
+	    
+	    // make sure the ccserver is aware of its id
+	    ws.send(JSON.stringify({type : "setid", id : id}));
+	    
+	    ws.on('message', function(message) {
+		    try {
 	    var json = JSON.parse(message);
 	    // TODO: Do some sort of sanity checking
 	    console.log(json);
@@ -87,57 +131,51 @@ wss.on('connection', function(ws) {
 		// pass any unknowns to the appropriate client
 	    default: console.log(liveServers[json.serverid].clients[json.playerid]); liveServers[json.serverid].clients[json.playerid].ws.send(message); break;
 	    }
-	} catch (ex) {
-	    // close the connection
-	    console.log("exception close");
-	    ws.close();
-	}
-    });
-});
-
-//TODO
-function saveAnswer(json) {
-
-}
-
-// This socket server is used for connection from a js-client
-var WebSocketServer = require('ws').Server
-, wss = new WebSocketServer({port: 8081});
-wss.on('connection', function(ws) {
-    ws.on('message', function(message) {
-	try {
-	    var json = JSON.parse(message);
-
-	    // if the message has no valid playerid
-	    if (json.playerid == null) {
-		// to be able to pass messages the other way we need to keep track
-		// of this socket, we also assign it an id so the ccserver can
-		// identify it
-		var playerid = liveServers[json.serverid].clients.length;
-		liveServers[json.serverid].clients.push({ws: ws});
-		// splice it onto the message
-		json.playerid = playerid;
-		
-		// the same if will be used by the client so let it know as well
-		ws.send(JSON.stringify({type : "assignid", playerid : playerid}));
+		    } catch (ex) {
+			// close the connection
+			console.log("exception close");
+			ws.close();
+		    }
+		});
+	});
+    
+    // This socket server is used for connection from a js-client
+    var wssClient = new WebSocketServer({port: 8081});
+    wssClient.on('connection', function(ws) {
+	    ws.on('message', function(message) {
+		    try {
+			var json = JSON.parse(message);
+			
+			// if the message has no valid playerid
+			if (json.playerid == null) {
+			    // to be able to pass messages the other way we need to keep track
+			    // of this socket, we also assign it an id so the ccserver can
+			    // identify it
+			    var playerid = liveServers[json.serverid].clients.length;
+			    liveServers[json.serverid].clients.push({ws: ws});
+			    // splice it onto the message
+			    json.playerid = playerid;
+			    
+			    // the same if will be used by the client so let it know as well
+			    ws.send(JSON.stringify({type : "assignid", playerid : playerid}));
 	    }
-	    
+			
 	    // pass it on to the relevant chromecast device
 	    // TODO: do some sanity checking here
 	    // TODO: this is a good place to grab statistics
-
+			
 	    // if this is the answer to a question, Save the answer for later
-	    if (json.type == "answer") {
-		saveAnswer();
-	    }
-
-	    liveServers[json.serverid].socket.send(JSON.stringify(json));
-	} catch (ex) {
-	    // close the connection
-	    ws.close();
-	}
-    });
-});
-
+			if (json.type == "answer") {
+			    saveAnswer();
+			}
+			
+			liveServers[json.serverid].socket.send(JSON.stringify(json));
+		    } catch (ex) {
+			// close the connection
+			ws.close();
+		    }
+		});
+	});
+}
 
 // Keep track of connections to the js-client
