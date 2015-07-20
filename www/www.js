@@ -4,7 +4,7 @@ Wordvector = new Mongo.Collection("wordvec");
 if (Meteor.isClient) {
     Session.set("qSearch", "");
     Session.set("typeSelect", "classic");
-    Session.set("ansSearch", "");
+    Session.set("ansSearch", ["","",""]);
     Tracker.autorun(function () {
 	Meteor.subscribe("questions", Session.get("qSearch"), Session.get("ansSearch"), Session.get("showAll"));
     });
@@ -34,6 +34,7 @@ if (Meteor.isClient) {
 
     function formClear(target) {
 	target.question.value = "";
+	target.category.value = "";
 	target.ans0.value = "";
 	target.ans1.value = "";
 	target.ans2.value = "";
@@ -44,6 +45,7 @@ if (Meteor.isClient) {
 
     function formClearRange(target) {
 	target.question.value = "";
+	target.category.value = "";
 	target.ans.value = "";
 	target.rangeLo.value = "";
 	target.rangeHi.value = "";
@@ -79,7 +81,11 @@ if (Meteor.isClient) {
 		    Meteor.clearTimeout(lastAnsSearch);
 		}
 		lastAnsSearch = Meteor.setTimeout(function() {
-		    Session.set("ansSearch", form.ans0.value.toLowerCase());
+			// underscores are currently stored in place of ' '
+			Session.set("ansSearch",
+				    [form.ans0.value.toLowerCase().replace(" ", "_"),
+				     form.ans1.value.toLowerCase().replace(" ", "_"),
+				     form.ans2.value.toLowerCase().replace(" ", "_")]);
 		}, 300);
 	    }
 	},
@@ -182,6 +188,7 @@ if (Meteor.isClient) {
 	    // This function is called when the new task form is submitted
 	    
 	    var question = event.target.question.value;
+	    var category = event.target.category.value;
 	    var type = Session.get("typeSelect");
 
 	    var ans;
@@ -209,7 +216,7 @@ if (Meteor.isClient) {
 		return false;
 	    }
 	    
-	    Meteor.call("addQuestion", question, ans, type);
+	    Meteor.call("addQuestion", question, category, ans, type);
 	    
 	    // Prevent default form submit
 	    return false;
@@ -273,16 +280,46 @@ if (Meteor.isClient) {
 }
 
 if (Meteor.isServer) {
+
+    function removeA(arr) {
+	var what, a = arguments, L = a.length, ax;
+	while (L > 1 && arr.length) {
+	    what = a[--L];
+	    while ((ax= arr.indexOf(what)) !== -1) {
+		arr.splice(ax, 1);
+	    }
+	}
+	return arr;
+    }
+
     Meteor.publish("wordvec", function (filterWord) {
+	    
 	// check if we have the word available
-	var ret = Wordvector.find({"word": filterWord});
+	    var ret = Wordvector.find({$or : [{"word": filterWord[0]},
+	                                      {"word": filterWord[1]},
+                                    	      {"word": filterWord[2]}]});
 	var data = ret.fetch();
 	var ans = null;
+
 	if (ret.count() != 0) {
-	    console.log(data[0].simid);
-	    // fetch all words that a similar
-	    ans = Wordvector.find({"id": {$in : data[0].simid}});
-	    console.log(ans.count());
+	    var i;
+	    ids = data[0].simid;
+
+	    // merge the first three we are searching for
+	    for (i = 1; i < data.length; ++i) {
+		ids = ids.concat(data[i].simid);
+	    }
+
+	    // grab the unique values
+	    var uniqids = ids.filter(function(item, i, ar){ return ar.indexOf(item) === i; });
+
+	    // fetch all words that are similar
+	    ans = Wordvector.find({"id": {$in : uniqids}});
+
+	    // strip any occurances of the filterwords
+	    removeA(ans, filterWord[0]);
+	    removeA(ans, filterWord[1]);
+	    removeA(ans, filterWord[2]);
 	}
 	return ans;
     });
@@ -292,30 +329,34 @@ if (Meteor.isServer) {
 	if (showAll) {
 	    ret = Questions.find();
 	} else {
-	    ret = Questions.find({$or: [{"text": filterWord} , {"ans": capitalise(ansSearch)}]});
+	    ret = Questions.find({$or: [{"text": filterWord},
+	    {"ans": capitalise(ansSearch[0])} ,
+	    {"ans": capitalise(ansSearch[1])},
+	    {"ans": capitalise(ansSearch[2])}]});
 	}
 	return ret;
     });
 }
 
 Meteor.methods({
-  addQuestion: function (question, ans, type) {
+	addQuestion: function (question, category, ans, type) {
     // Make sure the user is logged in before inserting a task
     if (! Meteor.userId()) {
       throw new Meteor.Error("not-authorized");
     }
 
       // TODO make potentially some checks on the data
-      Questions.insert({
-	  text: question,
-	  owner: Meteor.userId(), 
-	  ans : ans,
-	  type: type,
-	  username: Meteor.user().profile.name,
-	  createdAt: new Date() // current time
-      });
-
-  },
+    Questions.insert({
+	      text: question,
+		owner: Meteor.userId(), 
+		category : category,
+		ans : ans,
+		type: type,
+		username: Meteor.user().profile.name,
+		createdAt: new Date() // current time
+		});
+    
+	},
 
   deleteTask: function (taskId) {
     Questions.remove(taskId);
