@@ -96,6 +96,14 @@ function templateClassicQuestion(data) {
     document.getElementById("ans1").innerHTML = templateAns;
 }
 
+function templateRangeQuestion(data) {
+    var template = "<h1>" + data.q + "</h1>";
+    var templateAns = "<h1>" + data.ans.ans + "</h1>";
+
+    document.getElementById("q1").innerHTML = template;
+    document.getElementById("ans1").innerHTML = templateAns;
+}
+
 function templateSortQuestion(data) {
     var template = "<h1>" + data.q + "</h1>";
     var templateAns = "";
@@ -158,6 +166,9 @@ function score(q, player) {
     switch (q.type) {
     case "classic":
 	return (player.ans.ans == 0) ? (trimScore(130 * ((gameConfig.questiontime - player.ans.time) / gameConfig.questiontime))) : 0;
+	break;
+    case "range":
+	return (player.ans.ans == q.ans.ans) ? (trimScore(130 * ((gameConfig.questiontime - player.ans.time) / gameConfig.questiontime))) : 0;
 	break;
     case "sort":
 	var numSorted = sorted(player.ans.ans);
@@ -245,6 +256,7 @@ function startQuestion(q) {
     switch (q[0].type) {
     case "sort"   : templateSortQuestion(q[0]); break;
     case "classic": templateClassicQuestion(q[0]); break;
+    case "range"  : templateRangeQuestion(q[0]); break;
     case "map"    : templateMapQuestion(q[0]); break;
     }
 
@@ -298,7 +310,7 @@ function askForQuestions() {
     var request = {};
     request.type = "req";
     request.options = {};
-    request.options.types = ["sort", "map","classic","classic","classic","classic"];
+    request.options.types = ["range", "sort", "map","classic"];
 
     websocket.send(JSON.stringify(request));
 }

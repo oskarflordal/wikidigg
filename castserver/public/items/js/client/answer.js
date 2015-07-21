@@ -20,20 +20,6 @@ var answerClassicConfig = {
     }
 };
 
-var answerMapConfig = {
-    draggable:false,
-    formatItem:function (item, index) {
-	var o = new joFlexrow([
-	    new joClassyCaption(item.title, "list-item-title"),
-	]);
-	
-	return o;
-    },
-    onSelect:function(index, event) {
-	currentAnswer = event.data[index].ansid;
-    }
-};
-
 var currentAnswer;
 
 var answerSortConfig = {
@@ -92,6 +78,24 @@ function displayClassicAnswers(json) {
 
     answerCard = new joCard([
 	new joDraggableList(list, undefined, answerClassicConfig),
+	submitButton
+    ]).setTitle("Answers");
+
+    App.stack.push(answerCard);
+}
+
+function displayRangeAnswers(json) {
+    json.q.ans.rangeLo;
+    
+    answerHook = null;
+    var rangeLabel;
+
+    answerCard = new joCard([
+	rangeLabel = new joLabel("" + json.q.ans.rangeLo),
+	new joSlider(json.q.ans.rangeLo).setRange(json.q.ans.rangeLo, json.q.ans.rangeHi, json.q.ans.stepSz).changeEvent.subscribe(function(value) {
+	    rangeLabel.setData(value);
+	    currentAnswer = value;
+	}),
 	submitButton
     ]).setTitle("Answers");
 
@@ -205,6 +209,7 @@ function displayAnswers(json) {
 
     switch (json.q.type) {
     case "classic": displayClassicAnswers(json); break;
+    case "range"  : displayRangeAnswers(json); break;
     case "sort"   : displaySortAnswers(json); break;
     case "map"    : displayMapAnswers(json); break;
     }
