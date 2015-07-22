@@ -347,15 +347,15 @@ Meteor.methods({
 
       // TODO make potentially some checks on the data
     Questions.insert({
-	      text: question,
-		owner: Meteor.userId(), 
-		category : category,
-		ans : ans,
-		type: type,
-		username: Meteor.user().profile.name,
-		createdAt: new Date() // current time
-		});
-    
+	text: question,
+	owner: Meteor.userId(), 
+	category : category,
+	ans : ans,
+	type: type,
+	username: Meteor.user().profile.name,
+	createdAt: new Date() // current time
+    });
+	    
 	},
 
   deleteTask: function (taskId) {

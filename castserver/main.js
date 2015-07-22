@@ -28,12 +28,14 @@ var url = 'mongodb://localhost:27017/meteor';
 // Since questions will be few, lets grab all of them from the db
 // ans store them locally
 //TODO FIXME
-var questionCollection;
+var questionCollection = [{type : "classic", "text" : "Sveriges huvudstad??", "ans" : ["Stockholm", "Bollywood", "Tokyo", "Sumpan"]},
+			  {type : "classic", "text" : "Vad rimmar på apa", "ans" : ["papa", "boll", "koll", "nyans", "aaaa", "bbbb"]}];
 
 // Use connect method to connect to the Server
 MongoClient.connect(url, function (err, db) {
 	if (err) {
 	    console.log('Unable to connect to the mongoDB server. Error:', err);
+	    setupWSServers();
 	} else {
 	    //HURRAY!! We are connected. :)
 	    console.log('Connection established to', url);
@@ -64,9 +66,10 @@ MongoClient.connect(url, function (err, db) {
 // return indidivdual question nbased on category
 function generateQuestion(type) {
     switch (type) {
-    case "classic" : return {"type" : type, "q" : "Whats the capital of Sweden?", "ans" : ["Stockholm", "Bollywood", "Tokyo", "Sumpan"]};
-    case "sort" : return {"type" : type, "q" : "Sortera dessa svenska städer efter storlek?", "ans" : ["Stockholm", "Göteborg", "Malmö", "Uppsala", "Eskilstuna", "Flen"]};
-    case "map" : return {"type" : type, "q" : "Vart på kartan ligger Sverige?", "ans" : {"type" : "region", "location" : {longitude : 5.0, latitude : 3.3}, maxdistance : 1000}};
+    case "classic" : return questionCollection[Math.floor(Math.random() * questionCollection.length)];
+    case "range" : return {"type" : type, "text" : "Vilken siffra (10)?", "ans" : {ans: 10, rangeLo : 2, rangeHi : 20, stepSz : 2}};
+    case "sort" : return {"type" : type, "text" : "Sortera dessa svenska städer efter storlek?", "ans" : ["Stockholm", "Göteborg", "Malmö", "Uppsala", "Eskilstuna", "Flen"]};
+    case "map" : return {"type" : type, "text" : "Vart på kartan ligger Sverige?", "ans" : {"type" : "region", "location" : {longitude : 5.0, latitude : 3.3}, maxdistance : 1000}};
     }
 }
 

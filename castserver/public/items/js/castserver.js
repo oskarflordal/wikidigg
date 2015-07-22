@@ -55,7 +55,7 @@ var mappy;
 // these essentially replace templates, obviously it could be cleaner to move a proper templating system and move these into separate files
 function templateMapQuestion(data) {
 
-    document.getElementById("q1").innerHTML = "<h1>" + data.q + "</h1>";
+    document.getElementById("q1").innerHTML = "<h1>" + data.text + "</h1>";
 
     document.getElementById("ans1").innerHTML = "<div class=\"container\"><div class=\"map\">Alternative content</div></div></h1>";
 
@@ -89,7 +89,7 @@ function templateMapQuestion(data) {
 }
 
 function templateClassicQuestion(data) {
-    var template = "<h1>" + data.q + "</h1>";
+    var template = "<h1>" + data.text + "</h1>";
     var templateAns = "<h1>" + data.ans[0] + "</h1>";
 
     document.getElementById("q1").innerHTML = template;
@@ -97,7 +97,7 @@ function templateClassicQuestion(data) {
 }
 
 function templateRangeQuestion(data) {
-    var template = "<h1>" + data.q + "</h1>";
+    var template = "<h1>" + data.text + "</h1>";
     var templateAns = "<h1>" + data.ans.ans + "</h1>";
 
     document.getElementById("q1").innerHTML = template;
@@ -105,7 +105,7 @@ function templateRangeQuestion(data) {
 }
 
 function templateSortQuestion(data) {
-    var template = "<h1>" + data.q + "</h1>";
+    var template = "<h1>" + data.text + "</h1>";
     var templateAns = "";
     for (var i = 0; i  < data.ans.length; ++i) {
 	templateAns += "<h1>" + data.ans[i] + "</h1>";
@@ -310,7 +310,7 @@ function askForQuestions() {
     var request = {};
     request.type = "req";
     request.options = {};
-    request.options.types = ["range", "sort", "map","classic"];
+    request.options.types = ["range", "sort", "map","classic", "classic", "classic", "classic"];
 
     websocket.send(JSON.stringify(request));
 }
