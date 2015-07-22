@@ -151,7 +151,7 @@ function displayMapAnswers(json) {
 	    defaultArea : {
 		attrs : {
 		    fill : "#eeeeee"
-		    , stroke: "#ced8d0"
+		    , stroke: "#000000"
 		}
 		, text : {
 		    attrs : {
