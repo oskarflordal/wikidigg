@@ -286,10 +286,10 @@ function startGame(questions) {
 // When we are assigned an if from the server, show this on the screen
 // so that clients may connect
 function setId(id) {
-    var url = window.location.href.split('//')[1].split('/')[0]+'/items/client.html?' + id + "<br><br>";
+    var url = window.location.href.split('//')[1].split('/')[0]+'/items/client.html?' + id;
     serverid = id;
     
-    document.getElementById("url").innerHTML = url;
+    document.getElementById("url").innerHTML = url + "<br><br>";
     new QRCode(document.getElementById("qrcode"), url);
 }
 
