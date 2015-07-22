@@ -35,7 +35,7 @@
 						var yoffset = 231;
 					    var latitude = (y-yoffset)/yfactor;
 					    
-						return {longitude, latitude};
+					    return {longitude : longitude, latitude : latitude};
 					},
 				    'elems': {
 					"ALL" : "M0,0l2000,0l0,2000l-2000,0z", 

@@ -5,7 +5,7 @@ var name;
 var questionCallback;
 
 function start(name) {
-    websocket.send(JSON.stringify({type : "connect", serverid, name, playerid : null}))
+    websocket.send(JSON.stringify({type : "connect", serverid : serverid, name : name, playerid : null}))
 }
 
 function assignId(json) {
@@ -13,12 +13,12 @@ function assignId(json) {
 }
 
 function readyToServer(func) {
-    websocket.send(JSON.stringify({type : "ready", serverid, playerid}));
+    websocket.send(JSON.stringify({type : "ready", serverid : serverid, playerid : playerid}));
     questionCallback = func;
 }
 
 function answerToServer(ans) {
-    websocket.send(JSON.stringify({type : "answer", serverid, playerid, ans}));
+    websocket.send(JSON.stringify({type : "answer", serverid : serverid, playerid : playerid, ans : ans}));
 }
 
 function connectToServer(id, name, doneFunc) {

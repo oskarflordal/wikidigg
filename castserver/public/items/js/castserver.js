@@ -119,7 +119,7 @@ function templateSortQuestion(data) {
 function bcastQuestion(q) {
     var i;
     for (i = 0; i  < players.length; ++i) {
-	websocket.send(JSON.stringify({type: "question", serverid, playerid : i, q}));
+	websocket.send(JSON.stringify({type: "question", serverid : serverid, playerid : i, q:q}));
     }
     timeQSent = new Date();
 }
