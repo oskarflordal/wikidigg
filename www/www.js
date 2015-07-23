@@ -28,8 +28,14 @@ if (Meteor.isClient) {
 	}
     });
 
-    function capitalise(string) {
-	return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+    function capitalise(str) {
+	return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    }
+
+    function multiCapitalise(str) {
+	var split = str.split('_');
+	var fixed = split.map(capitalise);
+	return fixed.join(' ');
     }
 
     function formClear(target) {
@@ -104,15 +110,15 @@ if (Meteor.isClient) {
 
 	    // find an empty answer field and add this there
 	    if (!/\S/.test(ans1)) {
-		form.ans1.value = capitalise(this.word);
+		form.ans1.value = multiCapitalise(this.word);
 	    } else if (!/\S/.test(ans2)) {
-		form.ans2.value = capitalise(this.word);
+		form.ans2.value = multiCapitalise(this.word);
 	    } else if (!/\S/.test(ans3)) {
-		form.ans3.value = capitalise(this.word);
+		form.ans3.value = multiCapitalise(this.word);
 	    } else if (!/\S/.test(ans4)) {
-		form.ans4.value = capitalise(this.word);
+		form.ans4.value = multiCapitalise(this.word);
 	    } else if (!/\S/.test(ans5)) {
-		form.ans5.value = capitalise(this.word);
+		form.ans5.value = multiCapitalise(this.word);
 	    }
 
 	}
@@ -255,6 +261,14 @@ if (Meteor.isClient) {
 	},
     });
 
+    Template.answer.helpers({
+	    fixedword : function() {
+		// separate all underscores since that is the way they are stroed in the db
+		return this.word.replace('_',' ');
+	    }
+	});
+
+
     Template.qform.helpers({
 	selectclassic : function() {
 	    var type = Session.get("typeSelect");
@@ -323,6 +337,11 @@ if (Meteor.isServer) {
 	}
 	return ans;
     });
+
+    function toTitleCase(str) {
+	
+	return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+    }
     
     Meteor.publish("questions", function (filterWord, ansSearch, showAll) {
 	var ret;
