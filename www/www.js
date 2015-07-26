@@ -287,7 +287,49 @@ if (Meteor.isClient) {
 	    return type == "sort";
 	},
     });
-    
+
+    function setupMapael() {
+	mappy = $(".mapcontainer").mapael({
+	    map : {
+		name : "world_countries",
+		zoom: {
+		    enabled: false
+		},
+		defaultArea : {
+		    attrs : {
+			fill : "#ffffff",
+			stroke: "#000000"
+		    } ,
+		    text : {
+			attrs : {
+			    fill : "#505444"
+			}
+			, attrsHover : {
+			    fill : "#000"
+			}
+		    },
+		    
+		},
+		
+	    },
+	});
+    }
+
+    Template.mapview.onRendered(function(){
+	console.log("rendered!");
+	if (Session.get("typeSelect") == "map") {
+	    setupMapael();
+	}
+    });
+
+    Template.content.helpers({
+	selectmap : function() {
+	    var type = Session.get("typeSelect");
+	    var on = type == "map";
+	    return on;
+	},
+    });
+
     Accounts.ui.config({
 	passwordSignupFields: "USERNAME_ONLY"
     });
@@ -384,3 +426,10 @@ Meteor.methods({
     Questions.update(taskId, { $set: { checked: setChecked} });
   }
 });
+
+
+
+
+
+
+

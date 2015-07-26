@@ -311,6 +311,7 @@ function askForQuestions() {
     request.type = "req";
     request.options = {};
     request.options.types = ["range", "sort", "map","classic", "classic", "classic", "classic"];
+    gameConfig.rounds = request.options.types.length;
 
     websocket.send(JSON.stringify(request));
 }
