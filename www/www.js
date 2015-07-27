@@ -62,7 +62,24 @@ if (Meteor.isClient) {
     var lastQSearch = -1;
 
     var mappy;
-    
+
+    function degToRad(deg) {
+	return deg * (Math.PI/180);
+    }
+
+    // Calculate distance in kilometers between two points, used for scoring
+    function calcDistanceOnMap(from, to) {
+	var earthRad = 6371;
+	var degLat = degToRad(to.latitude-from.latitude);
+	var degLon = degToRad(to.longitude-from.longitude);
+	var a = Math.sin(degLat/2)*Math.sin(degLat/2)+
+	    Math.cos(degToRad(from.latitude))*Math.cos(degToRad(to.latitude))*
+	    Math.sin(degLon/2)*Math.sin(degLon/2);
+	var c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+	var d = earthRad*c; 
+	return d == NaN ? 999999 : d;
+    }
+
     Template.body.events({
 	"keyup": function (event, template) {
 	    var form = template.find(".newq");
@@ -83,16 +100,38 @@ if (Meteor.isClient) {
 
 	    // update based on longitude/latitude
 	    if (type == "map") {
-		var deletedPlots = ["point"];
+		var deletedPlots = ["point", "reach"];
+
+		// Find out how far away we need to set another point to indicate the current maximum distance
+		// do it iteratively for now
+		var dist = 0;
+		var itr = 0;
+		var longitr = parseInt(form.longitude.value);
+		while (dist < form.maxdistance.value && itr < 10000) {
+		    longitr += 0.1;
+		    itr++;
+		    dist = calcDistanceOnMap({latitude:form.latitude.value, longitude:form.longitude.value},
+					     {latitude:form.latitude.value, longitude:longitr});
+		}
+		console.log(itr);
+
 		var newPlots = {
 		    "point" : {
 			latitude : form.latitude.value,
 			longitude : form.longitude.value,
+			attrs : {
+			    fill : "#000000",
+			}
+		    },
+		    "reach" : {
+			latitude : form.latitude.value,
+			longitude : longitr,
+			attrs : {
+			    fill : "#777777",
+			}
 		    }
 		};
-		console.log("upd");
 		$(".mapcontainer").trigger('update', [null, newPlots, deletedPlots]);
-
 	    }
 	    
 	    // If we updated ans0 we will suggest answers
