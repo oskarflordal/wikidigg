@@ -21,30 +21,26 @@
     </header>
 
     <ul>
-      {{>content}}
+  
+      {{#if selectmap}}
+      {{> mapview}}
+      {{/if}}
+      
+      {{#each wordvec}}
+      {{> answer}}
+      {{/each}}
+      
+      
+      
+      {{#each questions}}
+      {{> question}}
+      {{/each}}
     </ul>
   </div>
 </body>
 
 <template name="mapview">
   <div class="mapcontainer"><div class="map">Alternative content</div></div>
-</template>
-  
-<template name="content">
-  <div style="visibility:hidden;">{{typeSelect}}</div> <!-- make sure we trigger updates when select is changed-->
-  {{#if selectmap}}
-  {{> mapview}}
-  {{/if}}
-      
-  {{#each wordvec}}
-      {{> answer}}
-  {{/each}}
-      
-      
-      
-  {{#each questions}}
-      {{> question}}
-  {{/each}}
 </template>
   
 <template name="qform">
