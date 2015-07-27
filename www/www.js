@@ -57,6 +57,13 @@ if (Meteor.isClient) {
 	target.rangeHi.value = "";
 	target.stepSz.value = "";
     }
+    function formClearMap(target) {
+	target.question.value = "";
+	target.category.value = "";
+	target.longitude.value = "";
+	target.latitude.value = "";
+	target.maxdistance.value = "";
+    }
 
     var lastAnsSearch = -1;
     var lastQSearch = -1;
@@ -245,6 +252,23 @@ if (Meteor.isClient) {
 	}
     }
 
+    function buildMapAnswer(event) {
+	var longitude = parseFloat(event.target.longitude.value);
+	var latitude = parseFloat(event.target.latitude.value);
+	var maxdistance = parseFloat(event.target.maxdistance.value);
+
+	// Sanity checks
+	// TODO
+	
+	
+	if (/\S/.test(longitude) && /\S/.test(latitude) && /\S/.test(maxdistance)) {
+	    return {map : "world_countries", location : {longitude : longitude,
+			latitude : latitude}, maxdistance : maxdistance};
+	} else {
+	    return false;
+	}
+    }
+
     Template.body.events({
 	"submit .newq": function (event) {
 	    // This function is called when the new task form is submitted
@@ -271,6 +295,7 @@ if (Meteor.isClient) {
 		break;
 	    case "map":
 		ans = buildMapAnswer(event);
+		formClearMap(event.target);
 		break;
 	    }
 
@@ -314,6 +339,9 @@ if (Meteor.isClient) {
 	},
 	typesort : function(val) {
 	    return val == "sort";
+	},
+	typemap : function(val) {
+	    return val == "map";
 	},
     });
 
@@ -378,7 +406,7 @@ if (Meteor.isClient) {
 	}
     });
 
-    Template.content.helpers({
+    Template.mapselect.helpers({
 	selectmap : function() {
 	    var type = Session.get("typeSelect");
 	    var on = type == "map";

@@ -22,9 +22,7 @@
 
     <ul>
   
-      {{#if selectmap}}
-      {{> mapview}}
-      {{/if}}
+      {{> mapselect}}
       
       {{#each wordvec}}
       {{> answer}}
@@ -38,6 +36,12 @@
     </ul>
   </div>
 </body>
+
+<template name="mapselect">
+      {{#if selectmap}}
+      {{> mapview}}
+      {{/if}}
+</template>
 
 <template name="mapview">
   <div class="mapcontainer"><div class="map">Alternative content</div></div>
@@ -99,6 +103,9 @@
     {{/if}}
     {{#if typesort type}}
 	TYPE:SORT<span class="answer"><strong>{{#each ans}}{{this}} {{/each}}</strong></span><br>
+    {{/if}}
+    {{#if typemap type}}
+	TYPE:MAP<span class="answer"><strong>[{{ans.location.longitude}},{{ans.location.latitude}}}</strong> ({{ans.maxdistance}}km) on {{ans.map}}</span><br>
     {{/if}}
   <span class="meta"><strong>Author</strong> :  {{username}} ({{relcreated}})</span>
   </li>
