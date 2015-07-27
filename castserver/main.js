@@ -69,7 +69,7 @@ function generateQuestion(type) {
     case "classic" : return questionCollection[Math.floor(Math.random() * questionCollection.length)];
     case "range" : return {"type" : type, "text" : "Vilken siffra (10)?", "ans" : {ans: 10, rangeLo : 2, rangeHi : 20, stepSz : 2}};
     case "sort" : return {"type" : type, "text" : "Sortera dessa svenska städer efter storlek?", "ans" : ["Stockholm", "Göteborg", "Malmö", "Uppsala", "Eskilstuna", "Flen"]};
-    case "map" : return {"type" : type, "text" : "Vart på kartan ligger Sverige?", "ans" : {"type" : "region", "location" : {longitude : 5.0, latitude : 3.3}, maxdistance : 1000}};
+    case "map" : return {"type" : type, "text" : "Vart på kartan ligger Sverige?", "ans" : {"map" : "world_countries", "location" : {longitude : 5.0, latitude : 3.3}, maxdistance : 1000}};
     }
 }
 

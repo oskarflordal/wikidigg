@@ -60,6 +60,9 @@ if (Meteor.isClient) {
 
     var lastAnsSearch = -1;
     var lastQSearch = -1;
+
+    var mappy;
+    
     Template.body.events({
 	"keyup": function (event, template) {
 	    var form = template.find(".newq");
@@ -77,6 +80,20 @@ if (Meteor.isClient) {
 	    }
 
 	    var type = Session.get("typeSelect");
+
+	    // update based on longitude/latitude
+	    if (type == "map") {
+		var deletedPlots = ["point"];
+		var newPlots = {
+		    "point" : {
+			latitude : form.latitude.value,
+			longitude : form.longitude.value,
+		    }
+		};
+		console.log("upd");
+		$(".mapcontainer").trigger('update', [null, newPlots, deletedPlots]);
+
+	    }
 	    
 	    // If we updated ans0 we will suggest answers
 	    if ((type == "classic" || type == "sort") &&

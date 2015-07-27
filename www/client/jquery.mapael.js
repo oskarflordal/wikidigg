@@ -308,9 +308,6 @@
 		if (typeof options.value != "undefined")
 			elem.value = options.value;
 		
-		// Init attrsHover
-		$.fn.mapael.setHoverOptions(elem.mapElem, options.attrs, options.attrsHover);
-		
 		// Init the label related to the element
 		if (options.text && typeof options.text.content != "undefined") {
 			// Set a text label in the area
@@ -318,12 +315,9 @@
 			textPosition = $.fn.mapael.getTextPosition(bbox, options.text.position, options.text.margin);
 			options.text.attrs["text-anchor"] = textPosition.textAnchor;
 			elem.textElem = paper.text(textPosition.x, textPosition.y, options.text.content).attr(options.text.attrs);
-			$.fn.mapael.setHoverOptions(elem.textElem, options.text.attrs, options.text.attrsHover);
-			$.fn.mapael.setHover(paper, elem.mapElem, elem.textElem);
 			options.eventHandlers && $.fn.mapael.setEventHandlers(id, options, elem.mapElem, elem.textElem);
 			$(elem.textElem.node).attr("data-id", id);
 		} else {
-			$.fn.mapael.setHover(paper, elem.mapElem);
 			options.eventHandlers && $.fn.mapael.setEventHandlers(id, options, elem.mapElem);
 		}
 		
@@ -472,7 +466,6 @@
 					elem.textElem.attr({x : textPosition.x, y : textPosition.y, "text-anchor" : textPosition.textAnchor});
 			}
 			
-			$.fn.mapael.setHoverOptions(elem.textElem, elemOptions.text.attrs, elemOptions.text.attrsHover);
 			if (animDuration > 0)
 				elem.textElem.animate(elemOptions.text.attrs, animDuration);
 			else
@@ -480,7 +473,6 @@
 		}
 		
 		// Update elements attrs and attrsHover
-		$.fn.mapael.setHoverOptions(elem.mapElem, elemOptions.attrs, elemOptions.attrsHover);
 		if (animDuration > 0)
 			elem.mapElem.animate(elemOptions.attrs, animDuration);
 		else
@@ -576,20 +568,6 @@
 			, $container = $tooltip.parent()
 			, containerY2 = $container.offset().left + $container.width();
 	
-		$(elem.node).on("mouseover", function(e) {
-			tooltipTO = setTimeout(
-			    function() {
-					elem.tooltipContent && $tooltip.html(elem.tooltipContent).css("display", "block");
-					$tooltip.css({"left" : Math.min(containerY2 - $tooltip.outerWidth() - 5, e.pageX + 10 - $(window).scrollLeft()), "top" : e.pageY + 20 - $(window).scrollTop()});
-				}
-				, 120
-			);
-		}).on("mouseout", function(e) {
-			clearTimeout(tooltipTO);
-			$tooltip.css("display", "none");
-		}).on("mousemove", function(e) {
-			$tooltip.css({"left" : Math.min(containerY2 - $tooltip.outerWidth() - 5, e.pageX + 10 - $(window).scrollLeft()), "top" : e.pageY + 20 - $(window).scrollTop()});
-		});
 	};
 	
 	/**
@@ -835,9 +813,6 @@
 						label.attr({cursor:"pointer"});
 						elem.attr({cursor:"pointer"});
 						
-						$.fn.mapael.setHoverOptions(elem, sliceAttrs[i], sliceAttrs[i]);
-						$.fn.mapael.setHoverOptions(label, legendOptions.labelAttrs, legendOptions.labelAttrsHover);
-						$.fn.mapael.setHover(paper, elem, label);
 						
 						label.hidden = false;
 						$.fn.mapael.handleClickOnLegendElem(legendOptions, legendOptions.slices[i], label, elem, elems, legendIndex);
@@ -927,56 +902,8 @@
 		return legends;
 	};
 	
-	/**
-	* Set the attributes on hover and the attributes to restore for a map element
-	* @param elem the map element
-	* @param originalAttrs the original attributes to restore on mouseout event
-	* @param attrsHover the attributes to set on mouseover event
-	*/
-	$.fn.mapael.setHoverOptions = function (elem, originalAttrs, attrsHover) {
-		// Disable transform option on hover for VML (IE<9) because of several bugs
-		if (Raphael.type != "SVG") delete attrsHover.transform;
-		elem.attrsHover = attrsHover;
-		
-		if (elem.attrsHover.transform) elem.originalAttrs = $.extend({transform : "s1"}, originalAttrs);
-		else elem.originalAttrs = originalAttrs;
-	};
 	
-	/**
-	* Set the hover behavior (mouseover & mouseout) for plots and areas
-	* @param paper Raphael paper object
-	* @param mapElem the map element
-	* @param textElem the optional text element (within the map element)
-	*/
-	$.fn.mapael.setHover = function (paper, mapElem, textElem) {
-		var $mapElem = {}
-			, $textElem = {}
-			, hoverTO = 0
-			, overBehaviour = function() {hoverTO = setTimeout(function () {$.fn.mapael.elemHover(paper, mapElem, textElem);}, 120);}
-			, outBehaviour = function () {clearTimeout(hoverTO);$.fn.mapael.elemOut(paper, mapElem, textElem);};
-			
-		$mapElem = $(mapElem.node);
-		$mapElem.on("mouseover", overBehaviour);
-		$mapElem.on("mouseout", outBehaviour);
-		
-		if (textElem) {
-			$textElem = $(textElem.node);
-			$textElem.on("mouseover", overBehaviour);
-			$(textElem.node).on("mouseout", outBehaviour);
-		}
-	};
 	
-	/**
-	* Set he behaviour for "mouseover" event
-	* @param paper paper Raphael paper object
-	* @param mapElem mapElem the map element
-	* @param textElem the optional text element (within the map element)
-	*/
-	$.fn.mapael.elemHover = function (paper, mapElem, textElem) {
-		mapElem.animate(mapElem.attrsHover, mapElem.attrsHover.animDuration);
-	    textElem && textElem.animate(textElem.attrsHover, textElem.attrsHover.animDuration);
-		paper.safari();
-	};
 	/**
 	* Set he behaviour for "mouseout" event
 	* @param paper Raphael paper object
