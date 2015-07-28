@@ -46,7 +46,36 @@
 <template name="mapview">
   <div class="mapcontainer"><div class="map">Alternative content</div></div>
 </template>
-  
+
+<template name="qformclassic">
+  <input type="text" name="ans0" id="ans0input" placeholder="Correct answer" />
+  <input type="text" name="ans1" id="ans1input" placeholder="Other answer" />
+  <input type="text" name="ans2" id="ans2input" placeholder="Other answer" />
+  <input type="text" name="ans3" id="ans3input" placeholder="Other answer" />
+  <input type="text" name="ans4" id="ans4input" placeholder="Other answer" />
+  <input type="text" name="ans5" id="ans5input" placeholder="Other answer" />
+</template>
+
+<template name="qformsort">
+  <input type="text" name="ans0" id="ans0input" placeholder="Top answer" />
+  <input type="text" name="ans1" id="ans1input" placeholder="Next answer" />
+  <input type="text" name="ans2" id="ans2input" placeholder="Next answer" />
+  <input type="text" name="ans3" id="ans3input" placeholder="Next answer" />
+  <input type="text" name="ans4" id="ans4input" placeholder="Next answer" />
+  <input type="text" name="ans5" id="ans5input" placeholder="Next answer" />
+</template>
+<template name="qformrange">
+  <input type="text" name="ans"  id="ansinput" placeholder="Correct value" />
+  <input type="text" name="rangeLo"  id="rangeLoinput" placeholder="Lower value" />-
+  <input type="text" name="rangeHi"  id="rangeHiinput" placeholder="Upper value" />
+  <input type="text" name="stepSz"  id="stepSzinput" placeholder="Step size" />
+</template>
+<template name="qformmap">
+  <input type="text" name="longitude"  id="longitudeinput" placeholder="Longitude" />
+  <input type="text" name="latitude"  id="latitudeinput" placeholder="Latitude" />
+  <input type="text" name="maxdistance"  id="maxdistanceinput" placeholder="Max distance" />
+</template>
+
 <template name="qform">
   <div style="visibility:hidden;">{{typeSelect}}</div> <!-- make sure we trigger updates when select is changed-->
   <form class="newq">
@@ -56,36 +85,12 @@
 	  <option value="sort">Sort</option>
 	  <option value="range">Range</option>
 	</select>
-	<input type="text" name="question" placeholder="Type to add new question" />
-	<input type="text" name="category" placeholder="Category" />
-	{{#if selectclassic}}
-	<input type="text" name="ans0" placeholder="Correct answer" />
-	<input type="text" name="ans1" placeholder="Other answer" />
-	<input type="text" name="ans2" placeholder="Other answer" />
-	<input type="text" name="ans3" placeholder="Other answer" />
-	<input type="text" name="ans4" placeholder="Other answer" />
-	<input type="text" name="ans5" placeholder="Other answer" />
-	{{/if}}
-	{{#if selectsort}}
-	<input type="text" name="ans0" placeholder="Top answer" />
-	<input type="text" name="ans1" placeholder="Next answer" />
-	<input type="text" name="ans2" placeholder="Next answer" />
-	<input type="text" name="ans3" placeholder="Next answer" />
-	<input type="text" name="ans4" placeholder="Next answer" />
-	<input type="text" name="ans5" placeholder="Next
-	answer" />
-	{{/if}}
-	{{#if selectrange}}
-	<input type="text" name="ans" placeholder="Correct value" />
-	<input type="text" name="rangeLo" placeholder="Lower value" />-
-	<input type="text" name="rangeHi" placeholder="Upper value" />
-	<input type="text" name="stepSz" placeholder="Step size" />
-	{{/if}}
-	{{#if selectmap}}
-	<input type="text" name="longitude" placeholder="Longitude" />
-	<input type="text" name="latitude" placeholder="Latitude" />
-	<input type="text" name="maxdistance" placeholder="Max distance" />
-	{{/if}}
+	<input type="text" name="question" id="qinput" class="qinput" placeholder="Type to add new question" />
+	<input type="text" name="category" id="cinput" placeholder="Category" />
+	{{#if selectclassic}} {{> qformclassic}} {{/if}}
+	{{#if selectsort}}    {{> qformsort}}    {{/if}}
+	{{#if selectrange}}   {{> qformrange}}   {{/if}}
+	{{#if selectmap}}     {{> qformmap}}     {{/if}}
 	<input type="submit" value="Submit">
 	<button type="clear" value="Clear">Clear</button>
       </form>
@@ -94,6 +99,7 @@
 <template name="question">
   <li>
     <button class="delete">&times;</button>
+    <button class="edit">edit</button>
     <span class="question">{{text}} </span><br>
     {{#if typeclassic type}}
 	TYPE:CLASSIC<span class="answer"><strong>{{ans.[0]}}</strong> :  {{#each nonfirst ans}}{{this}} {{/each}}</span><br>

@@ -120,7 +120,6 @@ if (Meteor.isClient) {
 		    dist = calcDistanceOnMap({latitude:form.latitude.value, longitude:form.longitude.value},
 					     {latitude:form.latitude.value, longitude:longitr});
 		}
-		console.log(itr);
 
 		var newPlots = {
 		    "point" : {
@@ -302,25 +301,48 @@ if (Meteor.isClient) {
 	    if (ans == false) {
 		return false;
 	    }
-	    
-	    Meteor.call("addQuestion", question, category, ans, type);
+
+	    var updateId = Session.get("editId");
+	    if (typeof updateId === 'undefined') {
+		Meteor.call("addQuestion", question, category, ans, type);
+	    } else {
+		Meteor.call("updateQuestion", updateId, question, category, ans, type);
+		delete Session.keys['editId'];
+	    }
 	    
 	    // Prevent default form submit
 	    return false;
 	},
 	"clear .newq": function (event) {
 	    // Clear form
+	    delete Session.keys['editId'];
 	    formClear(event.target);
 	},
 	"change #classpicker": function (event) {
 	    // Clear form
-	    console.log($(event.target).val());
 	    var type = Session.set("typeSelect", $(event.target).val());
 	}
     });
     Template.question.events({
 	"click .delete": function () {
 	    Meteor.call("deleteTask", this._id);
+	},
+	"click .edit": function () {
+	    Session.set("editId", this._id);
+	    if ($("#classpicker").val() == this.type) {
+		switch (this.type) {
+		case "classic": setEditClassic(this); break;
+		case "range": setEditRange(this); break;
+		case "map": setEditMap(this); break;
+		case "sort": setEditSort(this); break;
+		};
+		
+	    } else { // if we don't have the correct DOM rendered we need to wait until blaze has redrawn (I guess?)
+		// it is then called in the onrendered callback
+		$("#classpicker").val(this.type);
+		Session.set("typeSelect", this.type);
+		Session.set("edit", this);
+	    }
 	}
     }); 
 
@@ -372,6 +394,86 @@ if (Meteor.isClient) {
 	},
     });
 
+    function nifundef(a) {
+	return (typeof a === 'undefined') ? "" : a;
+    }
+    
+    function setEditClassic(q) {
+	$("#qinput")[0].value = q.text;
+	$("#cinput")[0].value = q.category;
+	$("#ans0input")[0].value = nifundef(q.ans[0]);
+	$("#ans1input")[0].value = nifundef(q.ans[1]);
+	$("#ans2input")[0].value = nifundef(q.ans[2]);
+	$("#ans3input")[0].value = nifundef(q.ans[3]);
+	$("#ans4input")[0].value = nifundef(q.ans[4]);
+	$("#ans5input")[0].value = nifundef(q.ans[5]);
+    }
+
+    function setEditSort(q) {
+	$("#qinput")[0].value = q.text;
+	$("#cinput")[0].value = q.category;
+	$("#ans0input")[0].value = nifundef(q.ans[0]);
+	$("#ans1input")[0].value = nifundef(q.ans[1]);
+	$("#ans2input")[0].value = nifundef(q.ans[2]);
+	$("#ans3input")[0].value = nifundef(q.ans[3]);
+	$("#ans4input")[0].value = nifundef(q.ans[4]);
+	$("#ans5input")[0].value = nifundef(q.ans[5]);
+    }
+
+    function setEditRange(q) {
+	$("#qinput")[0].value = q.text;
+	$("#cinput")[0].value = q.category;
+	$("#ansinput")[0].value = nifundef(q.ans.ans);
+	$("#rangeLoinput")[0].value = nifundef(q.ans.rangeLo);
+	$("#rangeHiinput")[0].value = nifundef(q.ans.rangeHi);
+	$("#stepSzinput")[0].value = nifundef(q.ans.stepSz);
+    }
+
+    function setEditMap(q) {
+	$("#qinput")[0].value = q.text;
+	$("#cinput")[0].value = q.category;
+	$("#longitudeinput")[0].value = nifundef(q.ans.location.longitude);
+	$("#latitudeinput")[0].value = nifundef(q.ans.location.latitude);
+	$("#maxdistanceinput")[0].value = nifundef(q.ans.maxdistance);
+    }
+
+    Template.qformclassic.onRendered(function(){
+	var q = Session.get('edit');
+	if (typeof q !== 'undefined') {
+	    // we have a question to edit, lets place it in the fields
+	    setEditClassic(q);
+	    
+	    delete Session.keys['edit'];
+	}
+    });
+    Template.qformsort.onRendered(function(){
+	var q = Session.get('edit');
+	if (typeof q !== 'undefined') {
+	    // we have a question to edit, lets place it in the fields
+	    setEditSort(q);
+	    
+	    delete Session.keys['edit'];
+	}
+    });
+    Template.qformrange.onRendered(function(){
+	var q = Session.get('edit');
+	if (typeof q !== 'undefined') {
+	    // we have a question to edit, lets place it in the fields
+	    setEditRange(q);
+	    
+	    delete Session.keys['edit'];
+	}
+    });
+    Template.qformmap.onRendered(function(){
+	var q = Session.get('edit');
+	if (typeof q !== 'undefined') {
+	    // we have a question to edit, lets place it in the fields
+	    setEditMap(q);
+	    
+	    delete Session.keys['edit'];
+	}
+    });
+
     function setupMapael() {
 	mappy = $(".mapcontainer").mapael({
 	    map : {
@@ -400,7 +502,6 @@ if (Meteor.isClient) {
     }
 
     Template.mapview.onRendered(function(){
-	console.log("rendered!");
 	if (Session.get("typeSelect") == "map") {
 	    setupMapael();
 	}
@@ -484,27 +585,52 @@ if (Meteor.isServer) {
 }
 
 Meteor.methods({
-	addQuestion: function (question, category, ans, type) {
-    // Make sure the user is logged in before inserting a task
-    if (! Meteor.userId()) {
-      throw new Meteor.Error("not-authorized");
-    }
+    addQuestion: function (question, category, ans, type) {
+	// Make sure the user is logged in before inserting a task
+	if (! Meteor.userId()) {
+	    throw new Meteor.Error("not-authorized");
+	}
+	
+	// TODO make potentially some more checks on the data
+	// although clientside is probably sufficient
+	Questions.insert({
+	    text: question,
+	    owner: Meteor.userId(), 
+	    category : category,
+	    ans : ans,
+	    type: type,
+	    username: Meteor.user().profile.name,
+	    createdAt: new Date() // current time
+	});
+	
+    },
 
-      // TODO make potentially some checks on the data
-    Questions.insert({
-	text: question,
-	owner: Meteor.userId(), 
-	category : category,
-	ans : ans,
-	type: type,
-	username: Meteor.user().profile.name,
-	createdAt: new Date() // current time
-    });
-	    
-	},
+    updateQuestion: function (updateId, question, category, ans, type) {
+	// Make sure the user is logged in before inserting a task
+	if (! Meteor.userId()) {
+	    throw new Meteor.Error("not-authorized");
+	}
+	
+	Questions.update(
+	    {"_id" : updateId},
+	    {
+		text: question,
+		owner: Meteor.userId(), 
+		category : category,
+		ans : ans,
+		type: type,
+		username: Meteor.user().profile.name,
+		createdAt: new Date() // current time
+	    },
+	    {upsert : false, multi : false });
+	
+    },
 
   deleteTask: function (taskId) {
-    Questions.remove(taskId);
+      if (! Meteor.userId()) { // should probably be admin or the like TODO
+	  throw new Meteor.Error("not-authorized");
+      }
+      Questions.remove(taskId);
   },
   setChecked: function (taskId, setChecked) {
     Questions.update(taskId, { $set: { checked: setChecked} });
