@@ -16,6 +16,8 @@
       {{> loginButtons}}
       {{#if currentUser}}
 
+      {{>sug}}
+
       {{>qform}}
       {{/if}}
     </header>
@@ -36,6 +38,13 @@
     </ul>
   </div>
 </body>
+
+<template name="sug">
+  {{#each suggested}}
+  <a href="https://sv.wikipedia.org/wiki/{{fixedword}}" target="_blank">{{fixedword}}</a><br>
+  {{/each}}
+</template>
+
 
 <template name="mapselect">
       {{#if selectmap}}

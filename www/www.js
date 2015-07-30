@@ -1,10 +1,14 @@
 Questions = new Mongo.Collection("questions");
+Suggested = new Mongo.Collection("suggested");
 Wordvector = new Mongo.Collection("wordvec");
 
 if (Meteor.isClient) {
     Session.set("qSearch", "");
     Session.set("typeSelect", "classic");
     Session.set("ansSearch", ["","",""]);
+
+    Meteor.subscribe("suggested");
+
     Tracker.autorun(function () {
 	Meteor.subscribe("questions", Session.get("qSearch"), Session.get("ansSearch"), Session.get("showAll"));
     });
@@ -20,6 +24,17 @@ if (Meteor.isClient) {
 	    return Questions.find({}, {sort: {createdAt: -1}})
 	}
     });
+
+    Template.sug.helpers({
+	    suggested: function () {
+		console.log("finding");
+		return Suggested.find({});
+	    },
+	    fixedword: function () {
+		return decodeURIComponent(this.word);
+	    }
+	});
+
 
     Template.body.helpers({
 	wordvec: function () {
@@ -569,6 +584,13 @@ if (Meteor.isServer) {
 	
 	return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
     }
+
+    Meteor.publish("suggested", function () {
+
+	    var rand = Math.random();
+	    console.log(rand);
+	    return Suggested.find({rnd : { $gte : rand}}, {limit : 5});
+	});
     
     Meteor.publish("questions", function (filterWord, ansSearch, showAll) {
 	var ret;
