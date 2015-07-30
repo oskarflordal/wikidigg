@@ -12,6 +12,10 @@ var questionpage = 2;
 var answerpage = 3;
 var scorepage = 4;
 
+//
+var timerPaper;
+var timeoutArc;
+
 var gameConfig = { questiontime : 10000,
 		   answertime : 10000,
 		   roundscoretime : 3000,
@@ -55,7 +59,7 @@ var mappy;
 // these essentially replace templates, obviously it could be cleaner to move a proper templating system and move these into separate files
 function templateMapQuestion(data) {
 
-    document.getElementById("q1").innerHTML = "<h1>" + data.text + "</h1>";
+    document.getElementById("q1text").innerHTML = data.text;
 
     document.getElementById("ans1").innerHTML = "<div class=\"container\"><div class=\"map\">Alternative content</div></div></h1>";
 
@@ -88,30 +92,92 @@ function templateMapQuestion(data) {
     ans1Func = function() {};
 }
 
+function setupTimer() {
+
+    // a canvas to draw on
+    timerPaper = Raphael(rcontent);
+
+    timerPaper.customAttributes.arc = function (xloc, yloc, value, total, R) {
+        var alpha = 360 / total * value,
+            a = (90 - alpha) * Math.PI / 180,
+            x = xloc + R * Math.cos(a),
+            y = yloc - R * Math.sin(a),
+            path;
+        if (total == value) {
+            path = [
+                ["M", xloc, yloc - R],
+                ["A", R, R, 0, 1, 1, xloc - 0.01, yloc - R]
+            ];
+        } else {
+            path = [
+                ["M", xloc, yloc - R],
+                ["A", R, R, 0, +(alpha > 180), 1, x, y]
+            ];
+        }
+        return {
+            path: path
+        };
+    };	
+    
+    var x = timerPaper.width/2;
+    var y = timerPaper.height/2;
+
+    var mindim = Math.min(timerPaper.width, timerPaper.height);
+
+    timeoutArc = timerPaper.path().attr({
+        "stroke": "grey",
+        "stroke-width": mindim/10,
+        arc: [x, y, 0, 100, mindim/4]
+    });
+
+}
+
+function doneTimer() {
+    var x = timerPaper.width/2;
+    var y = timerPaper.height/2;
+    var mindim = Math.min(timerPaper.width, timerPaper.height);
+    timeoutArc.stop();
+
+    timeoutArc.animate({
+        arc: [x, y, 0, 100, mindim/4]
+    }, 200);
+}
+
+function startTimer(timeout) {
+    var x = timerPaper.width/2;
+    var y = timerPaper.height/2;
+    var mindim = Math.min(timerPaper.width, timerPaper.height);
+
+    timeoutArc.animate({
+        arc: [x, y, 100, 100, mindim/4]
+    }, timeout-200, doneTimer);
+}
+
 function templateClassicQuestion(data) {
-    var template = "<h1>" + data.text + "</h1>";
+    var template = data.text;
     var templateAns = "<h1>" + data.ans[0] + "</h1>";
 
-    document.getElementById("q1").innerHTML = template;
+    document.getElementById("q1text").innerHTML = template;
     document.getElementById("ans1").innerHTML = templateAns;
+
 }
 
 function templateRangeQuestion(data) {
-    var template = "<h1>" + data.text + "</h1>";
+    var template = data.text;
     var templateAns = "<h1>" + data.ans.ans + "</h1>";
 
-    document.getElementById("q1").innerHTML = template;
+    document.getElementById("q1text").innerHTML = template;
     document.getElementById("ans1").innerHTML = templateAns;
 }
 
 function templateSortQuestion(data) {
-    var template = "<h1>" + data.text + "</h1>";
+    var template = data.text;
     var templateAns = "";
     for (var i = 0; i  < data.ans.length; ++i) {
 	templateAns += "<h1>" + data.ans[i] + "</h1>";
     }
 
-    document.getElementById("q1").innerHTML = template;
+    document.getElementById("q1text").innerHTML = template;
     document.getElementById("ans1").innerHTML = templateAns;
 }
 
@@ -207,6 +273,7 @@ function startScoreScreen(q) {
 
 
 function startAnswer(q) {
+
     // TODO refactor
     if(q[0].type == "map") {
 	var i, j;
@@ -260,6 +327,8 @@ function startQuestion(q) {
     case "map"    : templateMapQuestion(q[0]); break;
     }
 
+    startTimer(gameConfig.questiontime);
+
     bcastQuestion(q[0]);
     
     flipPage(questionpage);
@@ -310,7 +379,7 @@ function askForQuestions() {
     var request = {};
     request.type = "req";
     request.options = {};
-    request.options.types = ["range", "sort", "map","classic", "classic", "classic", "classic"];
+    request.options.types = ["classic", "classic", "classic", "classic", "range", "sort", "map"];
     gameConfig.rounds = request.options.types.length;
 
     websocket.send(JSON.stringify(request));
@@ -357,6 +426,9 @@ function connectToNode() {
     websocket.onmessage = function(evt) { onMessage(evt) };
     websocket.onerror = function(evt) { console.log("error")};
 }
+
+setupTimer();
+
 
 // send this to get questions
 //websocket.send(JSON.stringify(request));
